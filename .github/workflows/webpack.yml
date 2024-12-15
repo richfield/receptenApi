@@ -1,0 +1,36 @@
+name: Deploy ReceptenApi
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: self-hosted
+
+    strategy:
+      matrix:
+        node-version: [20.x]
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Build the project
+      run: npm run build
+
+    - name: Copy files to deployment directory
+      run: |
+        cp ${{ github.workspace }}/dist/*.js /docker-config/receptenapi
+
+    - name: Restart Service
+      run: docker compose -f /docker-config/receptenapi/compose.yml up -d --force-recreate
