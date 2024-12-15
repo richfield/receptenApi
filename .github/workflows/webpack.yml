@@ -31,6 +31,7 @@ jobs:
     - name: Copy files to deployment directory
       run: |
         cp -R ${{ github.workspace }}/dist/* /docker-config/receptenApi
+        cp ${{ github.workspace }}/package.json /docker-config/receptenApi
 
     - name: Restart Service
       run: docker compose -f /docker-config/receptenApi/compose.yml up -d --force-recreate
