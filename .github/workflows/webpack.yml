@@ -33,5 +33,6 @@ jobs:
         cp -R ${{ github.workspace }}/dist/* /docker-config/receptenApi/app
         cp ${{ github.workspace }}/package.json /docker-config/receptenApi/app
 
+
     - name: Restart Service
       run: docker compose -f /docker-config/receptenApi/compose.yml up -d --force-recreate
