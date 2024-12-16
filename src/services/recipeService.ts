@@ -24,9 +24,9 @@ export async function saveRecipe(recipeData: RecipeData) {
 // Get a recipe by its ID
 export async function getRecipeById(findId: string) {
     try {
-        const id = new mongoose.Types.ObjectId(findId);
-        console.log({id})
-        const recipe = await RecipeModel.findOne({ id });
+        const _id = new mongoose.Types.ObjectId(findId);
+        console.log({id: _id})
+        const recipe = await RecipeModel.findOne({ id: _id });
         console.log({recipe})
         if (recipe) {
             return mapSingleImage(recipe.toObject());
