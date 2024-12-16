@@ -35,4 +35,4 @@ jobs:
 
 
     - name: Restart Service
-      run: docker compose -f /docker-config/receptenApi/compose.yml up -d --force-recreate
+      run: docker compose -f /docker-config/receptenApi/compose.yml up -d --force-recreate --build

@@ -20,6 +20,7 @@ router.get('/', async (req: Request, res: Response) => {
             const newRecipe = convertIRecipeToRecipeData(recipe);
             saveRecipe(newRecipe);
             res.json(newRecipe);
+            console.log(`Downloaded ${myUrl} through html-recipe-parser`)
             return;
         }
 
@@ -38,13 +39,13 @@ router.get('/', async (req: Request, res: Response) => {
 
         // Navigate to the specified URL
         await page.goto(myUrl, {});
-
+        console.log("starting puppeteer")
         // Extract recipe data from <script type="application/ld+json">
         let recipeData: RecipeData = {};
         const scriptElements = await page.evaluate(() => {
             return Array.from(document.querySelectorAll('script[type="application/ld+json"]')).map(script => script.innerHTML);
         });
-
+        console.log(scriptElements)
         for (const scriptContent of scriptElements) {
             if (scriptContent) {
                 try {
@@ -97,7 +98,7 @@ router.get('/', async (req: Request, res: Response) => {
 
         // Close the browser
         await browser.close();
-
+        console.log(`Downloaded ${myUrl} through puppeteer`)
         res.json(recipeData);
     } catch (error) {
         console.log({ error });
