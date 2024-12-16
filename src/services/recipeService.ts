@@ -2,6 +2,7 @@ import { RecipeData } from "../Types";
 import { getDB } from '../utils/dbConnection';
 import { v4 as uuidv4 } from 'uuid';
 import RecipeModel from "../models/Recipe";
+import mongoose from "mongoose";
 
 // Save or update a recipe
 export async function saveRecipe(recipeData: RecipeData) {
@@ -21,9 +22,9 @@ export async function saveRecipe(recipeData: RecipeData) {
 }
 
 // Get a recipe by its ID
-export async function getRecipeById(id: string) {
+export async function getRecipeById(findId: string) {
     try {
-        const recipe = await RecipeModel.findOne({ id });
+        const recipe = await RecipeModel.findOne({ id: new mongoose.Types.ObjectId(findId) });
         if (recipe) {
             return mapSingleImage(recipe.toObject());
         } else {

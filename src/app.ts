@@ -6,7 +6,9 @@ import scrapeRoutes from "./routes/scrapeRoutes";
 const app = express();
 const port = process.env.PORT ? parseInt(process.env.PORT) : 3000;
 const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017';
-const options: ConnectOptions = {}
+const options: ConnectOptions = {
+    dbName: 'receptenApi'
+}
 mongoose.connect(mongoURI,options)
     .then(() => console.log('MongoDB connected'))
     .catch((err) => console.error('MongoDB connection error:', err));
