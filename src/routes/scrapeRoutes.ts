@@ -24,7 +24,10 @@ router.get('/', async (req: Request, res: Response) => {
         }
 
         // Launch Puppeteer to scrape the webpage
-        const browser = await puppeteer.launch();
+        const browser = await puppeteer.launch({
+            headless: true,
+            args: ['--no-sandbox', '--disable-setuid-sandbox'],
+        });
         const page = await browser.newPage();
         await page.setExtraHTTPHeaders({
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.159 Safari/537.36',
