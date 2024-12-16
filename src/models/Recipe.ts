@@ -47,12 +47,12 @@ const RecipeSchema = new Schema<RecipeData>({
     recipeCuisine: { type: [String], default: [] },
     aggregateRating: { type: String },
     video: { type: String },
-    id: { type: String, required: true, unique: true }, // Custom `id`
+    //_id: { type: String, required: true, unique: true }, // Custom `id`
 });
 
 // Add a virtual `id` field to map `_id`
 RecipeSchema.virtual('id').get(function () {
-    return this._id.toHexString();
+    return this.id.toHexString();
 });
 
 // Ensure virtuals are included in JSON output
