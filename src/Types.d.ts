@@ -38,6 +38,14 @@ export type RecipeData = {
     recipeCategory?: string | string[];
     recipeCuisine?: string | string[];
     aggregateRating?: string; // Optional field
-    video?: string; // Optional field
+    video?: string | VideoObject; // Optional field
     _id?: string;
 };
+
+type VideoObject = {
+    '@type': 'VideoObject';
+    name?: string
+    description?: string;
+    thumbnailUrl?: string[],
+    contentUrl?: string
+}

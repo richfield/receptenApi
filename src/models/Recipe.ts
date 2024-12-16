@@ -1,6 +1,26 @@
 import mongoose, { Schema } from 'mongoose';
 import { RecipeData } from '../Types';
 
+const VideoObjectSchema = new mongoose.Schema({
+    '@type': { type: String, default: 'VideoObject' },
+    name: String,
+    description: String,
+    thumbnailUrl: [String],
+    contentUrl: String
+});
+
+const VideoSchema = new mongoose.Schema({
+    video: {
+        type: mongoose.Schema.Types.Mixed,
+        set: (value: any) => {
+            if (typeof value === 'string') {
+                return { '@type': 'VideoObject', contentUrl: value };
+            }
+            return value;
+        }
+    }
+});
+
 /**
  * Define the schema without directly extending Document
  */
@@ -46,9 +66,9 @@ const RecipeSchema = new Schema<RecipeData>({
     recipeCategory: { type: [String], default: [] },
     recipeCuisine: { type: [String], default: [] },
     aggregateRating: { type: String },
-    video: { type: String },
-    //_id: { type: String, required: true, unique: true }, // Custom `id`
+    video: VideoSchema
 });
+
 
 // Add a virtual `id` field to map `_id`
 RecipeSchema.virtual('id').get(function () {
