@@ -65,7 +65,15 @@ const RecipeSchema = new Schema<RecipeData>({
     description: { type: String },
     recipeCategory: { type: [String], default: [] },
     recipeCuisine: { type: [String], default: [] },
-    aggregateRating: { type: String },
+    aggregateRating: {
+        type: mongoose.Schema.Types.Mixed,
+        set: (value: { [x: string]: string; }) => {
+            if (typeof value === 'object' && value['@type'] === 'AggregateRating') {
+                return value;
+            }
+            return { '@type': 'AggregateRating', ratingValue: value, ratingCount: 1 };
+        }
+    },
     video: VideoSchema
 });
 
