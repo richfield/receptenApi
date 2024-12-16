@@ -1,5 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
-import { RecipeData } from '../types';
+import { RecipeData } from '../Types';
 
 /**
  * Define the schema without directly extending Document
