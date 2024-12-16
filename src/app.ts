@@ -1,11 +1,15 @@
 import express from 'express';
+import mongoose, { ConnectOptions } from "mongoose";
 import recipeRoutes from "./routes/recipeRoutes";
 import scrapeRoutes from "./routes/scrapeRoutes";
-import { connectToDatabase } from './utils/dbConnection';
 
 const app = express();
 const port = process.env.PORT ? parseInt(process.env.PORT) : 3000;
-connectToDatabase();
+const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017';
+const options: ConnectOptions = {}
+mongoose.connect(mongoURI,options)
+    .then(() => console.log('MongoDB connected'))
+    .catch((err) => console.error('MongoDB connection error:', err));
 
 app.use(express.json());
 // Connect to the database

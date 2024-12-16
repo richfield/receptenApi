@@ -23,12 +23,14 @@ router.get('/', async (req: Request, res: Response) => {
             console.log(`Downloaded ${myUrl} through html-recipe-parser`)
             return;
         }
-
+        console.log("Launching puppeteer")
         // Launch Puppeteer to scrape the webpage
         const browser = await puppeteer.launch({
             headless: true,
             args: ['--no-sandbox', '--disable-setuid-sandbox'],
         });
+        console.log("Launched puppeteer")
+
         const page = await browser.newPage();
         await page.setExtraHTTPHeaders({
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.159 Safari/537.36',
