@@ -24,7 +24,10 @@ export async function saveRecipe(recipeData: RecipeData) {
 // Get a recipe by its ID
 export async function getRecipeById(findId: string) {
     try {
-        const recipe = await RecipeModel.findOne({ id: new mongoose.Types.ObjectId(findId) });
+        const id = new mongoose.Types.ObjectId(findId);
+        console.log({id})
+        const recipe = await RecipeModel.findOne({ id });
+        console.log({recipe})
         if (recipe) {
             return mapSingleImage(recipe.toObject());
         } else {
@@ -82,7 +85,7 @@ export async function searchRecipes(query: string) {
 // Delete a recipe by its ID
 export async function deleteRecipe(id: string) {
     try {
-        const result = await RecipeModel.deleteOne({ id });
+        const result = await RecipeModel.deleteOne({ id: new mongoose.Types.ObjectId(id) });
         if (result.deletedCount === 0) {
             throw new Error('Recipe not found');
         }
