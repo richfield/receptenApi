@@ -5,7 +5,6 @@ import { connectToDatabase } from './utils/dbConnection';
 
 const app = express();
 const port = process.env.PORT ? parseInt(process.env.PORT) : 3000;
-console.log(JSON.stringify({env: process.env}))
 connectToDatabase();
 
 app.use(express.json());

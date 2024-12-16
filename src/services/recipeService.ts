@@ -21,7 +21,7 @@ export async function getRecipeById(id: string) {
     const db = await getDB();
     const recipeRow = await db.collection('recipes').findOne({ id });
     if (recipeRow) {
-        return recipeRow.data;
+        return mapSingleImage(recipeRow.data);
     } else {
         throw new Error('Recipe not found by id');
     }
@@ -30,7 +30,7 @@ export async function getRecipeById(id: string) {
 export async function getAllRecipes() {
     const db = await getDB();
     const recipes  = await db.collection('recipes').find().toArray();
-    return recipes.map((row: { data: any; }) => row.data);
+    return recipes.map((row: { data: RecipeData; }) => mapSingleImage(row.data));
 }
 
 export async function searchRecipes(query: string) {
@@ -56,7 +56,7 @@ export async function searchRecipes(query: string) {
         ]
     };
     const recipes = await db.collection('recipes').find(searchQuery).toArray();
-    return recipes.map((row: { data: any; }) => row.data);
+    return recipes.map((row: { data: RecipeData; }) => mapSingleImage(row.data));
 }
 
 
@@ -66,4 +66,12 @@ export async function deleteRecipe(id: string) {
     if (result.deletedCount === 0) {
         throw new Error('Recipe not found');
     }
+}
+
+function mapSingleImage(recipe: RecipeData) : RecipeData {
+    if(Array.isArray(recipe.image)) {
+        recipe.image = recipe.image[0]
+        console.log({image: recipe.image})
+    }
+    return recipe;
 }
