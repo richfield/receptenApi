@@ -6,14 +6,12 @@ import RecipeModel from "../models/Recipe";
 // Save or update a recipe
 export async function saveRecipe(recipeData: RecipeData) {
     try {
-        const id = recipeData._id || uuidv4(); // Generate a new GUID if none exists
-        recipeData._id = id;
-
-        const existingRecipe = await RecipeModel.findOne({ id });
+        const existingRecipe = await RecipeModel.findOne({ name: recipeData.name });
         if (existingRecipe) {
-            await RecipeModel.updateOne({ id }, { $set: recipeData });
+            await RecipeModel.updateOne({ name: recipeData.name }, { $set: recipeData });
         } else {
             const newRecipe = new RecipeModel(recipeData);
+            console.log({newRecipe})
             await newRecipe.save();
         }
     } catch (error) {
@@ -41,6 +39,7 @@ export async function getRecipeById(id: string) {
 export async function getAllRecipes() {
     try {
         const recipes = await RecipeModel.find();
+        console.log({recipes})
         return recipes.map((recipe: { toObject: () => RecipeData; }) => mapSingleImage(recipe.toObject()));
     } catch (error) {
         console.error('Error getting all recipes:', error);
