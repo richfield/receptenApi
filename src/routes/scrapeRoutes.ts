@@ -96,12 +96,12 @@ router.get('/', async (req: Request, res: Response) => {
         }
 
         // Save recipe to SQLite database
-        await saveRecipe(recipeData);
+        const newRecipe = await saveRecipe(recipeData);
 
         // Close the browser
         await browser.close();
         console.log(`Downloaded ${myUrl} through puppeteer`)
-        res.json(recipeData);
+        res.json(newRecipe);
     } catch (error) {
         console.log({ error });
         res.json(error);

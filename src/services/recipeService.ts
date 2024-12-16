@@ -12,8 +12,8 @@ export async function saveRecipe(recipeData: RecipeData) {
             await RecipeModel.updateOne({ name: recipeData.name }, { $set: recipeData });
         } else {
             const newRecipe = new RecipeModel(recipeData);
-            console.log({newRecipe})
             await newRecipe.save();
+            return newRecipe.toObject();
         }
     } catch (error) {
         console.error('Error saving recipe:', error);
