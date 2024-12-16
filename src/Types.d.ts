@@ -39,5 +39,5 @@ export type RecipeData = {
     recipeCuisine?: string | string[];
     aggregateRating?: string; // Optional field
     video?: string; // Optional field
-    id?: string;
+    _id?: string;
 };

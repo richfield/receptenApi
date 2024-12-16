@@ -5,65 +5,90 @@ import RecipeModel from "../models/Recipe";
 
 // Save or update a recipe
 export async function saveRecipe(recipeData: RecipeData) {
-    const id = recipeData.id || uuidv4(); // Generate a new GUID if none exists
-    recipeData.id = id;
+    try {
+        const id = recipeData._id || uuidv4(); // Generate a new GUID if none exists
+        recipeData._id = id;
 
-    const existingRecipe = await RecipeModel.findOne({ id });
-    if (existingRecipe) {
-        await RecipeModel.updateOne({ id }, { $set: recipeData });
-    } else {
-        const newRecipe = new RecipeModel(recipeData);
-        await newRecipe.save();
+        const existingRecipe = await RecipeModel.findOne({ id });
+        if (existingRecipe) {
+            await RecipeModel.updateOne({ id }, { $set: recipeData });
+        } else {
+            const newRecipe = new RecipeModel(recipeData);
+            await newRecipe.save();
+        }
+    } catch (error) {
+        console.error('Error saving recipe:', error);
+        throw new Error('Failed to save recipe');
     }
 }
 
 // Get a recipe by its ID
 export async function getRecipeById(id: string) {
-    const recipe = await RecipeModel.findOne({ id });
-    if (recipe) {
-        return mapSingleImage(recipe.toObject());
-    } else {
-        throw new Error('Recipe not found by id');
+    try {
+        const recipe = await RecipeModel.findOne({ id });
+        if (recipe) {
+            return mapSingleImage(recipe.toObject());
+        } else {
+            throw new Error('Recipe not found by id');
+        }
+    } catch (error) {
+        console.error('Error getting recipe by ID:', error);
+        throw new Error('Failed to retrieve recipe');
     }
 }
 
 // Get all recipes
 export async function getAllRecipes() {
-    const recipes = await RecipeModel.find();
-    return recipes.map((recipe: { toObject: () => RecipeData; }) => mapSingleImage(recipe.toObject()));
+    try {
+        const recipes = await RecipeModel.find();
+        return recipes.map((recipe: { toObject: () => RecipeData; }) => mapSingleImage(recipe.toObject()));
+    } catch (error) {
+        console.error('Error getting all recipes:', error);
+        throw new Error('Failed to retrieve recipes');
+    }
 }
 
 // Search recipes based on a query
 export async function searchRecipes(query: string) {
-    const searchQuery = {
-        $or: [
-            { name: { $regex: query, $options: 'i' } },
-            { description: { $regex: query, $options: 'i' } },
-            {
-                recipeIngredient: {
-                    $elemMatch: {
+    try {
+        const searchQuery = {
+            $or: [
+                { name: { $regex: query, $options: 'i' } },
+                { description: { $regex: query, $options: 'i' } },
+                {
+                    recipeIngredient: {
+                        $elemMatch: {
+                            $regex: query,
+                            $options: 'i'
+                        }
+                    }
+                },
+                {
+                    'author.name': {
                         $regex: query,
                         $options: 'i'
                     }
                 }
-            },
-            {
-                'author.name': {
-                    $regex: query,
-                    $options: 'i'
-                }
-            }
-        ]
-    };
-    const recipes = await RecipeModel.find(searchQuery);
-    return recipes.map((recipe: { toObject: () => RecipeData; }) => mapSingleImage(recipe.toObject()));
+            ]
+        };
+        const recipes = await RecipeModel.find(searchQuery);
+        return recipes.map((recipe: { toObject: () => RecipeData; }) => mapSingleImage(recipe.toObject()));
+    } catch (error) {
+        console.error('Error searching recipes:', error);
+        throw new Error('Failed to search recipes');
+    }
 }
 
 // Delete a recipe by its ID
 export async function deleteRecipe(id: string) {
-    const result = await RecipeModel.deleteOne({ id });
-    if (result.deletedCount === 0) {
-        throw new Error('Recipe not found');
+    try {
+        const result = await RecipeModel.deleteOne({ id });
+        if (result.deletedCount === 0) {
+            throw new Error('Recipe not found');
+        }
+    } catch (error) {
+        console.error('Error deleting recipe:', error);
+        throw new Error('Failed to delete recipe');
     }
 }
 
