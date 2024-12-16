@@ -10,10 +10,11 @@ export async function saveRecipe(recipeData: RecipeData) {
         const existingRecipe = await RecipeModel.findOne({ name: recipeData.name });
         if (existingRecipe) {
             await RecipeModel.updateOne({ name: recipeData.name }, { $set: recipeData });
+            return existingRecipe.toObject();
         } else {
             const newRecipe = new RecipeModel(recipeData);
-            await newRecipe.save();
-            return newRecipe.toObject();
+            const saved = await newRecipe.save();
+            return saved.toObject();
         }
     } catch (error) {
         console.error('Error saving recipe:', error);
