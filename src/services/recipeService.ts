@@ -26,7 +26,7 @@ export async function getRecipeById(findId: string) {
     try {
         const _id = new mongoose.Types.ObjectId(findId);
         console.log({id: _id})
-        const recipe = await RecipeModel.findOne({ id: _id });
+        const recipe = await RecipeModel.findOne({ _id });
         console.log({recipe})
         if (recipe) {
             return mapSingleImage(recipe.toObject());

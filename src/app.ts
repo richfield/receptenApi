@@ -5,7 +5,7 @@ import scrapeRoutes from "./routes/scrapeRoutes";
 
 const app = express();
 const port = process.env.PORT ? parseInt(process.env.PORT) : 3000;
-const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017';
+const mongoURI = process.env.MONGODB_URI || 'mongodb://debian.ten-velde.com:32768';
 const options: ConnectOptions = {
     dbName: 'receptenApi'
 }
