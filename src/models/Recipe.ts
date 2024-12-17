@@ -29,7 +29,7 @@ const RecipeSchema = new Schema<RecipeData>({
     '@type': { type: String, default: 'Recipe' },
     author: {
         '@type': { type: String, default: 'Organization' },
-        name: { type: String, required: true },
+        name: { type: String },
     },
     keywords: { type: [String], default: [] },
     image: {
@@ -67,7 +67,15 @@ const RecipeSchema = new Schema<RecipeData>({
             text: { type: String },
         },
     ],
-    recipeYield: { type: String },
+    recipeYield: {
+        type: String,
+        set: (value: string | string[]) => {
+            if (Array.isArray(value)) {
+                return value.join(', '); // Convert the array to a comma-separated string
+            }
+            return value;
+        }
+    },
     description: { type: String },
     recipeCategory: { type: [String], default: [] },
     recipeCuisine: { type: [String], default: [] },
