@@ -32,7 +32,13 @@ const RecipeSchema = new Schema<RecipeData>({
         name: { type: String, required: true },
     },
     keywords: { type: [String], default: [] },
-    image: { type: [String], default: [] },
+    image: {
+        type: [String],
+        default: [],
+        set: (value: string | string[]) => {
+            return Array.isArray(value) ? value : [value];
+        },
+    },
     recipeIngredient: { type: [String], default: [] },
     name: { type: String, required: true },
     url: { type: String },

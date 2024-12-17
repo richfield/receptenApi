@@ -1,6 +1,4 @@
 import { RecipeData } from "../Types";
-import { getDB } from '../utils/dbConnection';
-import { v4 as uuidv4 } from 'uuid';
 import RecipeModel from "../models/Recipe";
 import mongoose from "mongoose";
 
@@ -30,7 +28,7 @@ export async function getRecipeById(findId: string) {
         const recipe = await RecipeModel.findOne({ _id });
         console.log({recipe})
         if (recipe) {
-            return mapSingleImage(recipe.toObject());
+            return recipe.toObject();
         } else {
             throw new Error('Recipe not found by id');
         }
@@ -45,7 +43,7 @@ export async function getAllRecipes() {
     try {
         const recipes = await RecipeModel.find();
         console.log({recipes})
-        return recipes.map((recipe: { toObject: () => RecipeData; }) => mapSingleImage(recipe.toObject()));
+        return recipes.map((recipe: { toObject: () => RecipeData; }) => recipe.toObject());
     } catch (error) {
         console.error('Error getting all recipes:', error);
         throw new Error('Failed to retrieve recipes');
@@ -76,7 +74,7 @@ export async function searchRecipes(query: string) {
             ]
         };
         const recipes = await RecipeModel.find(searchQuery);
-        return recipes.map((recipe: { toObject: () => RecipeData; }) => mapSingleImage(recipe.toObject()));
+        return recipes.map((recipe: { toObject: () => RecipeData; }) => recipe.toObject());
     } catch (error) {
         console.error('Error searching recipes:', error);
         throw new Error('Failed to search recipes');
@@ -95,12 +93,4 @@ export async function deleteRecipe(id: string) {
         console.error('Error deleting recipe:', error);
         throw new Error('Failed to delete recipe');
     }
-}
-
-// Map single image from recipe data
-function mapSingleImage(recipe: RecipeData): RecipeData {
-    if (Array.isArray(recipe.image)) {
-        recipe.image = recipe.image[0];
-    }
-    return recipe;
 }
