@@ -86,7 +86,8 @@ export async function searchRecipes(query: string) {
 // Delete a recipe by its ID
 export async function deleteRecipe(id: string) {
     try {
-        const result = await RecipeModel.deleteOne({ id: new mongoose.Types.ObjectId(id) });
+        const _id = new mongoose.Types.ObjectId(id);
+        const result = await RecipeModel.deleteOne({ _id });
         if (result.deletedCount === 0) {
             throw new Error('Recipe not found');
         }
