@@ -36,7 +36,7 @@ const RecipeSchema = new Schema<RecipeData>({
         type: [String],
         default: [],
         set: (value: string | string[]) => {
-            return Array.isArray(value) ? value : [value];
+            return Array.isArray(value) ? value : value.includes(',') ? value.split(',') : [value];
         },
     },
     recipeIngredient: { type: [String], default: [] },
