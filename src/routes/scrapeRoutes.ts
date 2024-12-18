@@ -47,13 +47,14 @@ router.get('/', async (req: Request, res: Response) => {
         const scriptElements = await page.evaluate(() => {
             return Array.from(document.querySelectorAll('script[type="application/ld+json"]')).map(script => script.innerHTML);
         });
-        console.log(scriptElements)
+        console.log({scriptElements})
         for (const scriptContent of scriptElements) {
             if (scriptContent) {
                 try {
                     const jsonData = JSON.parse(scriptContent.trim());
                     if (jsonData['@type'] === 'Recipe') {
                         recipeData = jsonData as RecipeData;
+                        console.log({jsonData, recipeData})
                         break; // Break the loop if we found the recipe
                     }
 
@@ -62,6 +63,7 @@ router.get('/', async (req: Request, res: Response) => {
                         const graphRecipe = jsonData['@graph'].find((item: { [x: string]: string; }) => item['@type'] === 'Recipe');
                         if (graphRecipe) {
                             recipeData = graphRecipe as RecipeData;
+                            console.log({ graphRecipe, recipeData })
                             break; // Break the loop once we find the recipe
                         }
                     }
