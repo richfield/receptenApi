@@ -32,7 +32,7 @@ const RecipeSchema = new Schema<RecipeData>({
         name: { type: String },
     },
     keywords: { type: [String], default: [] },
-    image: {
+    images: {
         type: [String],
         default: [],
         set: (value: string | string[]) => {
