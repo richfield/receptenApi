@@ -39,6 +39,10 @@ const RecipeSchema = new Schema<RecipeData>({
             return Array.isArray(value) ? value : value.includes(',') ? value.split(',') : [value];
         },
     },
+    image: {
+        data: { type: Buffer },
+        contentType: { type: String },
+    },
     recipeIngredient: { type: [String], default: [] },
     name: { type: String, required: true },
     url: { type: String },

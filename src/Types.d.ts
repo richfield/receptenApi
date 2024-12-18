@@ -7,6 +7,7 @@ export type RecipeData = {
     };
     keywords?: string | string[];
     images?: string[];
+    image?: Buffer;
     recipeIngredient?: string[];
     name?: string;
     url?: string;
