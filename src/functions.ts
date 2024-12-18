@@ -9,7 +9,7 @@ export function convertIRecipeToRecipeData(recipe: IRecipe): RecipeData {
         url: recipe.sourceUrl,
         author: recipe.author ? { '@type': 'Organization', name: recipe.author } : undefined,
         keywords: recipe.keywords,
-        image: recipe.imageUrl,
+        images: Array.isArray(recipe.imageUrl) ? recipe.imageUrl : recipe.imageUrl?.includes(",") ? recipe.imageUrl.split(",") : recipe.imageUrl ? [recipe.imageUrl] : [],
         recipeIngredient: recipe.ingredients,
         recipeInstructions: recipe.instructions?.map(instruction => ({
             '@type': 'HowToStep',
