@@ -2,6 +2,7 @@ import { IRecipe } from "html-recipe-parser/dist/interfaces";
 import { RecipeData } from "./Types";
 
 export function convertIRecipeToRecipeData(recipe: IRecipe): RecipeData {
+    console.log({convertIRecipeToRecipeData:recipe})
     return {
         '@context': 'https://schema.org',
         '@type': 'Recipe',
