@@ -17,9 +17,8 @@ router.get('/', async (req: Request, res: Response) => {
 
         const recipe: Recipe = await parseURL(myUrl).catch(err => { res.json(err); return err; });
         if (recipe && recipe.instructions) {
-            const newRecipe = convertIRecipeToRecipeData(recipe);
-            saveRecipe(newRecipe);
-            res.json(newRecipe);
+            const savedRecipe = await saveRecipe(convertIRecipeToRecipeData(recipe));
+            res.json(savedRecipe);
             console.log(`Downloaded ${myUrl} through html-recipe-parser`)
             return;
         }
