@@ -5,13 +5,31 @@ import mongoose from "mongoose";
 // Save or update a recipe
 export async function saveRecipe(recipeData: RecipeData) {
     try {
-        const existingRecipe = await RecipeModel.findOne({ name: recipeData.name });
+        let existingRecipe = null;
+
+        // Check if a recipe exists by ID
+        if (recipeData._id) {
+            existingRecipe = await RecipeModel.findById(recipeData._id);
+        }
+
+        // If no recipe is found by ID, check by name
+        if (!existingRecipe) {
+            existingRecipe = await RecipeModel.findOne({ name: recipeData.name });
+        }
+
         if (existingRecipe) {
-            await RecipeModel.updateOne({ name: recipeData.name }, { $set: recipeData });
+            // Update the existing recipe
+            const updated = await RecipeModel.updateOne(
+                { _id: existingRecipe._id },
+                { $set: recipeData }
+            );
+            console.log({ id: updated.upsertedId, updated, existingRecipe });
             return existingRecipe.toObject();
         } else {
+            // Create a new recipe
             const newRecipe = new RecipeModel(recipeData);
             const saved = await newRecipe.save();
+            console.log({ newRecipe, saved });
             return saved.toObject();
         }
     } catch (error) {
