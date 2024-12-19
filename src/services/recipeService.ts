@@ -55,7 +55,14 @@ export async function setImageByUrl(recipeId: string, url: string) {
     try {
 
         const existingImage = await RecipeImageModel.findOne({ recipeId });
-        const response = await axios.get(url, { responseType: 'arraybuffer' });
+        const response = await axios.get(url, {
+            responseType: 'arraybuffer',
+            headers: {
+                'User-Agent': 'Mozilla/5.0',
+                'Accept': 'image/webp,image/apng,image/*,*/*;q=0.8',
+                'Referer': url
+            }
+        });
         const imageBuffer = Buffer.from(response.data);
 
         if (existingImage) {
