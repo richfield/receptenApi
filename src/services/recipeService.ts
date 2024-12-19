@@ -11,12 +11,12 @@ export async function saveRecipe(recipeData: RecipeData) {
         if (recipeData._id) {
             existingRecipe = await RecipeModel.findById(recipeData._id);
         }
-
+        console.log({existingById: existingRecipe})
         // If no recipe is found by ID, check by name
         if (!existingRecipe) {
             existingRecipe = await RecipeModel.findOne({ name: recipeData.name });
         }
-
+        console.log({ existingByName: existingRecipe })
         if (existingRecipe) {
             // Update the existing recipe
             const updated = await RecipeModel.updateOne(
