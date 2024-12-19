@@ -1,8 +1,7 @@
-import { IRecipe } from "html-recipe-parser/dist/interfaces";
-import { RecipeData } from "./Types";
+import { IRecipe } from 'html-recipe-parser/dist/interfaces';
+import { RecipeData } from './Types';
 
 export function convertIRecipeToRecipeData(recipe: IRecipe): RecipeData {
-    console.log({convertIRecipeToRecipeData:recipe})
     return {
         '@context': 'https://schema.org',
         '@type': 'Recipe',
@@ -10,7 +9,7 @@ export function convertIRecipeToRecipeData(recipe: IRecipe): RecipeData {
         url: recipe.sourceUrl,
         author: recipe.author ? { '@type': 'Organization', name: recipe.author } : undefined,
         keywords: recipe.keywords,
-        images: Array.isArray(recipe.imageUrl) ? recipe.imageUrl : recipe.imageUrl?.includes(",") ? recipe.imageUrl.split(",") : recipe.imageUrl ? [recipe.imageUrl] : [],
+        images: Array.isArray(recipe.imageUrl) ? recipe.imageUrl : recipe.imageUrl?.includes(',') ? recipe.imageUrl.split(',') : recipe.imageUrl ? [recipe.imageUrl] : [],
         recipeIngredient: recipe.ingredients,
         recipeInstructions: recipe.instructions?.map(instruction => ({
             '@type': 'HowToStep',

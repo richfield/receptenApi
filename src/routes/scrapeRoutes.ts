@@ -1,9 +1,10 @@
 import express, { Request, Response } from 'express';
-import { parseURL, Recipe } from "html-recipe-parser";
-import puppeteer from "puppeteer";
-import { convertIRecipeToRecipeData } from "../functions";
-import { saveRecipe } from "../services/recipeService";
-import { RecipeData } from "../Types";
+import { parseURL, Recipe } from 'html-recipe-parser';
+import puppeteer from 'puppeteer';
+import { convertIRecipeToRecipeData } from '../functions';
+import { saveRecipe } from '../services/recipeService';
+import { RecipeData } from '../Types';
+import { IRecipe } from 'html-recipe-parser/dist/interfaces';
 
 const router = express.Router();
 
@@ -15,20 +16,23 @@ router.get('/', async (req: Request, res: Response) => {
             return;
         }
 
-        const recipe: Recipe = await parseURL(myUrl).catch(err => { res.json(err); return err; });
+        let recipe: Recipe|string = await parseURL(myUrl).catch((err: Error) => { res.json(err); return err; });
+        if (typeof recipe === 'string') {
+            // res.status(500).json({ error: 'Cannot parse url: ' + myUrl });
+            // return;
+            recipe = {} as IRecipe;
+        }
+
         if (recipe && recipe.instructions) {
             const savedRecipe = await saveRecipe(convertIRecipeToRecipeData(recipe));
             res.json(savedRecipe);
-            console.log(`Downloaded ${myUrl} through html-recipe-parser`)
             return;
         }
-        console.log("Launching puppeteer")
         // Launch Puppeteer to scrape the webpage
         const browser = await puppeteer.launch({
             headless: true,
             args: ['--no-sandbox', '--disable-setuid-sandbox'],
         });
-        console.log("Launched puppeteer")
 
         const page = await browser.newPage();
         await page.setExtraHTTPHeaders({
@@ -40,13 +44,12 @@ router.get('/', async (req: Request, res: Response) => {
 
         // Navigate to the specified URL
         await page.goto(myUrl, {});
-        console.log("starting puppeteer")
         // Extract recipe data from <script type="application/ld+json">
         let recipeData: RecipeData = {};
         const scriptElements = await page.evaluate(() => {
             return Array.from(document.querySelectorAll('script[type="application/ld+json"]')).map(script => script.innerHTML);
         });
-        console.log({ scriptElements })
+
         for (const scriptContent of scriptElements) {
             if (scriptContent) {
                 try {
@@ -65,7 +68,8 @@ router.get('/', async (req: Request, res: Response) => {
                         }
                     }
                 } catch (err) {
-                    console.error("Failed to parse JSON:", err);
+                    // eslint-disable-next-line no-console
+                    console.error('Failed to parse JSON:', err);
                 }
             }
         }
@@ -73,7 +77,7 @@ router.get('/', async (req: Request, res: Response) => {
         if (recipeData.name) {
             if (Array.isArray(recipeData.image)) {
                 recipeData.images = recipeData.image
-            } else if (recipeData && typeof recipeData.image === "string") {
+            } else if (recipeData && typeof recipeData.image === 'string') {
                 recipeData.images = [recipeData.image]
             }
 
@@ -99,10 +103,10 @@ router.get('/', async (req: Request, res: Response) => {
 
         // Close the browser
         await browser.close();
-        console.log(`Downloaded ${myUrl} through puppeteer`)
         res.json(newRecipe);
     } catch (error) {
-        console.log({ error });
+        // eslint-disable-next-line no-console
+        console.error({ error });
         res.json(error);
     }
 });

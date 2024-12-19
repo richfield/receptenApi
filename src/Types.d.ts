@@ -6,8 +6,8 @@ export type RecipeData = {
         name: string;
     };
     keywords?: string | string[];
+    image?: string;
     images?: string[];
-    image?: Buffer;
     recipeIngredient?: string[];
     name?: string;
     url?: string;

@@ -1,18 +1,11 @@
 import mongoose, { Schema } from 'mongoose';
-import { RecipeData } from '../Types';
+import { RecipeData, VideoObject } from '../Types';
 
-const VideoObjectSchema = new mongoose.Schema({
-    '@type': { type: String, default: 'VideoObject' },
-    name: String,
-    description: String,
-    thumbnailUrl: [String],
-    contentUrl: String
-});
 
 const VideoSchema = new mongoose.Schema({
     video: {
         type: mongoose.Schema.Types.Mixed,
-        set: (value: any) => {
+        set: (value: VideoObject) => {
             if (typeof value === 'string') {
                 return { '@type': 'VideoObject', contentUrl: value };
             }
@@ -38,10 +31,6 @@ const RecipeSchema = new Schema<RecipeData>({
         set: (value: string | string[]) => {
             return Array.isArray(value) ? value : value.includes(',') ? value.split(',') : [value];
         },
-    },
-    image: {
-        data: { type: Buffer },
-        contentType: { type: String },
     },
     recipeIngredient: { type: [String], default: [] },
     name: { type: String, required: true },
