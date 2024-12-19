@@ -18,7 +18,7 @@ export async function saveRecipe(recipeData: RecipeData) {
         }
         console.log({ existingByName: existingRecipe })
         if (existingRecipe) {
-            // Update the existing recipe
+            recipeData._id = existingRecipe._id;
             const updated = await RecipeModel.updateOne(
                 { _id: existingRecipe._id },
                 { $set: recipeData }
