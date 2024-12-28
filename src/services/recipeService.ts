@@ -3,10 +3,12 @@ import RecipeModel from '../models/Recipe';
 import mongoose from 'mongoose';
 import axios from 'axios';
 import { RecipeImageModel } from '../models/RecipeImageModel';
+import moment from 'moment/min/moment-with-locales';
 
 // Save or update a recipe
-export async function saveRecipe(recipeData: RecipeData): Promise<RecipeData> {
+export async function saveRecipe(recipe: RecipeData): Promise<RecipeData> {
     try {
+        const recipeData = fixRecipe(recipe);
         let existingRecipe = null;
 
         // Check if a recipe exists by ID
@@ -24,16 +26,6 @@ export async function saveRecipe(recipeData: RecipeData): Promise<RecipeData> {
             existingRecipe = newRecipe;
         }
 
-        // // If image is not set, try to use the first URL from images
-        // if (recipeData.images?.length) {
-        //     const imageUrl = recipeData.images[0];
-        //     console.log(imageUrl);
-        //     try {
-        //         await setImageByUrl(existingRecipe._id, imageUrl);
-        //     } catch (error) {
-        //         console.error(error)
-        //     }
-        // }
         recipeData._id = existingRecipe._id;
         await RecipeModel.updateOne(
             { _id: existingRecipe._id },
@@ -193,3 +185,68 @@ export const getImageById = async (id: string): Promise<Buffer | null> => {
 
     return recipe.image;
 };
+
+function fixRecipe(recipe: RecipeData) {
+    if (Array.isArray(recipe.keywords) && recipe.keywords.length === 1 && recipe.keywords[0].includes(',')) {
+        recipe.keywords = recipe.keywords[0].split(',')
+    }
+    if (Array.isArray(recipe.recipeCategory) && recipe.recipeCategory.length === 1 && recipe.recipeCategory[0].includes(',')) {
+        recipe.recipeCategory = recipe.recipeCategory[0].split(',')
+    }
+    if (Array.isArray(recipe.recipeCuisine) && recipe.recipeCuisine.length === 1 && recipe.recipeCuisine[0].includes(',')) {
+        recipe.recipeCuisine = recipe.recipeCuisine[0].split(',')
+    }
+    if(needsConversion(recipe.cookTime)) {
+        recipe.cookTime = toISO8601Duration(recipe.cookTime)
+    }
+
+    if (needsConversion(recipe.totalTime)) {
+        recipe.totalTime = toISO8601Duration(recipe.totalTime)
+    }
+
+    if (needsConversion(recipe.prepTime)) {
+        recipe.prepTime = toISO8601Duration(recipe.prepTime)
+    }
+    return recipe;
+}
+
+/**
+ * Checks if the input matches the regex for minutes or hours
+ * @param {string} input - The input string to check
+ * @returns {boolean} - True if the input needs conversion, false otherwise
+ */
+function needsConversion(input: string | undefined): boolean {
+    const regex = /(\d+)\s*(minutes|minuten|minute|min|hours|uur|uren|hour|h)/i;
+    return input !== undefined && regex.test(input);
+}
+
+/**
+ * Converts a valid input to ISO 8601 duration format
+ * @param {string} input - The input string to convert
+ * @returns {string} - ISO 8601 duration format
+ * @throws {Error} - If the input format is invalid
+ */
+function toISO8601Duration(input: string | undefined): string {
+    const regex = /(\d+)\s*(minutes|minuten|minute|min|hours|uur|uren|hour|h)/i;
+    const match = input?.match(regex);
+
+    if (!match) {
+        // eslint-disable-next-line no-console
+        console.error('Invalid input format for conversion');
+        return input || '';
+    }
+
+    const value = parseInt(match[1], 10); // Extract the numeric value
+    const unit = match[2].toLowerCase(); // Normalize unit to lowercase
+
+    // Determine the ISO 8601 format based on the unit
+    if (['minutes', 'minuten', 'minute', 'min'].includes(unit)) {
+        return `PT${value}M`; // Minutes
+    } else if (['hours', 'uur', 'uren', 'hour', 'h'].includes(unit)) {
+        return `PT${value}H`; // Hours
+    } else {
+        // eslint-disable-next-line no-console
+        console.error('Unsupported time unit');
+        return input || '';
+    }
+}
