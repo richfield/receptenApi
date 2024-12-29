@@ -2,7 +2,7 @@ import express, { Request, Response } from 'express';
 import { parseURL, Recipe } from 'html-recipe-parser';
 import puppeteer from 'puppeteer';
 import { convertIRecipeToRecipeData } from '../functions';
-import { saveRecipe } from '../services/recipeService';
+import { saveRecipe, setImageByUrl } from '../services/recipeService';
 import { RecipeData } from '../Types';
 import { IRecipe } from 'html-recipe-parser/dist/interfaces';
 
@@ -25,6 +25,10 @@ router.get('/', async (req: Request, res: Response) => {
 
         if (recipe && recipe.instructions) {
             const savedRecipe = await saveRecipe(convertIRecipeToRecipeData(recipe));
+            if (savedRecipe.images && savedRecipe.images?.length > 0 && savedRecipe._id) {
+                setImageByUrl(savedRecipe._id, savedRecipe.images[0])
+            }
+
             res.json(savedRecipe);
             return;
         }
@@ -100,6 +104,9 @@ router.get('/', async (req: Request, res: Response) => {
 
         // Save recipe to SQLite database
         const newRecipe = await saveRecipe(recipeData);
+        if (newRecipe.images && newRecipe.images?.length > 0 && newRecipe._id) {
+            setImageByUrl(newRecipe._id, newRecipe.images[0])
+        }
 
         // Close the browser
         await browser.close();
