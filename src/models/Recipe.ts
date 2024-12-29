@@ -87,7 +87,7 @@ const RecipeSchema = new Schema<RecipeData>({
 
 // Add a virtual `id` field to map `_id`
 RecipeSchema.virtual('id').get(function () {
-    return this.id.toHexString();
+    return this._id;
 });
 
 // Ensure virtuals are included in JSON output

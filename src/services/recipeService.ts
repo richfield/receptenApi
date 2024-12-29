@@ -3,7 +3,6 @@ import RecipeModel from '../models/Recipe';
 import mongoose from 'mongoose';
 import axios from 'axios';
 import { RecipeImageModel } from '../models/RecipeImageModel';
-import moment from 'moment/min/moment-with-locales';
 
 // Save or update a recipe
 export async function saveRecipe(recipe: RecipeData): Promise<RecipeData> {
@@ -187,25 +186,37 @@ export const getImageById = async (id: string): Promise<Buffer | null> => {
 };
 
 function fixRecipe(recipe: RecipeData) {
+    const defaultRecipe: RecipeData = {
+        name: '',
+        description: '',
+        keywords: [],
+        recipeCategory: [],
+        recipeCuisine: [],
+        cookTime: '',
+        totalTime: '',
+        prepTime: '',
+        recipeIngredient: [],
+    };
+
+    recipe = { ...defaultRecipe, ...recipe };
+    console.log({id:recipe._id})
     if (Array.isArray(recipe.keywords) && recipe.keywords.length === 1 && recipe.keywords[0].includes(',')) {
-        recipe.keywords = recipe.keywords[0].split(',')
+        recipe.keywords = recipe.keywords[0].split(',');
     }
     if (Array.isArray(recipe.recipeCategory) && recipe.recipeCategory.length === 1 && recipe.recipeCategory[0].includes(',')) {
-        recipe.recipeCategory = recipe.recipeCategory[0].split(',')
+        recipe.recipeCategory = recipe.recipeCategory[0].split(',');
     }
     if (Array.isArray(recipe.recipeCuisine) && recipe.recipeCuisine.length === 1 && recipe.recipeCuisine[0].includes(',')) {
-        recipe.recipeCuisine = recipe.recipeCuisine[0].split(',')
+        recipe.recipeCuisine = recipe.recipeCuisine[0].split(',');
     }
-    if(needsConversion(recipe.cookTime)) {
-        recipe.cookTime = toISO8601Duration(recipe.cookTime)
+    if (needsConversion(recipe.cookTime)) {
+        recipe.cookTime = toISO8601Duration(recipe.cookTime);
     }
-
     if (needsConversion(recipe.totalTime)) {
-        recipe.totalTime = toISO8601Duration(recipe.totalTime)
+        recipe.totalTime = toISO8601Duration(recipe.totalTime);
     }
-
     if (needsConversion(recipe.prepTime)) {
-        recipe.prepTime = toISO8601Duration(recipe.prepTime)
+        recipe.prepTime = toISO8601Duration(recipe.prepTime);
     }
     return recipe;
 }
