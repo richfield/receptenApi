@@ -1,6 +1,8 @@
 /* eslint-disable no-console */
 import express from 'express';
+import dotenv from 'dotenv';
 
+dotenv.config();
 import mongoose, { ConnectOptions } from 'mongoose';
 import recipeRoutes from './routes/recipeRoutes';
 import scrapeRoutes from './routes/scrapeRoutes';
@@ -24,7 +26,6 @@ const serviceAccount = {
     auth_provider_x509_cert_url: process.env.FIREBASE_AUTH_PROVIDER_X509_CERT_URL,
     client_x509_cert_url: process.env.FIREBASE_CLIENT_X509_CERT_URL
 };
-console.log({serviceAccount})
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
 });
