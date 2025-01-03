@@ -1,3 +1,5 @@
+import { Request } from 'express';
+
 export type RecipeData = {
     '@context'?: 'https://schema.org';
     '@type'?: 'Recipe';
@@ -49,4 +51,56 @@ type VideoObject = {
     description?: string;
     thumbnailUrl?: string[],
     contentUrl?: string
+}
+
+export interface AuthenticatedRequest extends Request {
+    user?: {
+        uid: string;
+        [key: string]: unknown;
+    };
+}
+
+type Language = 'en' | 'nl'
+
+/**
+ * Represents the settings associated with a user profile.
+ */
+export interface UserSettings {
+    theme: string;
+    language: Language;
+}
+
+/**
+ * Represents a user profile in the application.
+ */
+export interface UserProfile {
+    /**
+     * Firebase User ID.
+     */
+    firebaseUID: string;
+
+    /**
+     * Dictionary of user settings.
+     */
+    settings: UserSettings;
+
+    /**
+     * Array of roles assigned to the user.
+     */
+    roles: string[];
+
+    /**
+     * Array of groups the user belongs to.
+     */
+    groups: string[];
+
+    /**
+     * Timestamp of when the profile was created.
+     */
+    createdAt: Date;
+
+    /**
+     * Timestamp of when the profile was last updated.
+     */
+    updatedAt: Date;
 }

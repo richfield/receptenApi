@@ -1,5 +1,8 @@
 {
     "cSpell.words": [
         "receptenapi"
-    ]
+    ],
+    "javascript.preferences.quoteStyle": "single",
+    "typescript.preferences.quoteStyle": "single",
+    "prettier.jsxSingleQuote": true
 }
