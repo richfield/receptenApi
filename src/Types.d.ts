@@ -87,12 +87,12 @@ export interface UserProfile {
     /**
      * Array of roles assigned to the user.
      */
-    roles: string[];
+    roles: RoleData[];
 
     /**
      * Array of groups the user belongs to.
      */
-    groups: string[];
+    groups: GroupData[];
 
     /**
      * Timestamp of when the profile was created.
@@ -103,4 +103,12 @@ export interface UserProfile {
      * Timestamp of when the profile was last updated.
      */
     updatedAt: Date;
+}
+
+export interface RoleData {
+    name: string;
+}
+
+export interface GroupData {
+    name: string;
 }

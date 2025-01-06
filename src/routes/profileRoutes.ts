@@ -8,8 +8,8 @@ router.get('/me', async (req: Request, res: Response) => {
     try {
         const firebaseUID = (req as AuthenticatedRequest).user?.uid;
         if (!firebaseUID) {
-           res.status(401).json({ error: 'Unauthorized' });
-           return;
+            res.status(401).json({ error: 'Unauthorized' });
+            return;
         }
 
         const profile = await userProfileService.getUserProfile(firebaseUID);
@@ -32,6 +32,7 @@ router.post('/me', async (req: Request, res: Response) => {
         const profileData = req.body;
         const updatedProfile = await userProfileService.setUserProfile(firebaseUID, profileData);
         res.json(updatedProfile);
+
     } catch (error) {
         if (error instanceof Error) {
             res.status(500).json({ error: error.message });

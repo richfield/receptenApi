@@ -199,7 +199,6 @@ function fixRecipe(recipe: RecipeData) {
     };
 
     recipe = { ...defaultRecipe, ...recipe };
-    console.log({id:recipe._id})
     if (Array.isArray(recipe.keywords) && recipe.keywords.length === 1 && recipe.keywords[0].includes(',')) {
         recipe.keywords = recipe.keywords[0].split(',');
     }

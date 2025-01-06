@@ -21,7 +21,7 @@ export async function setUserProfile(firebaseUID: string, profileData: Partial<U
     const userProfileCount = await UserProfileModel.countDocuments({ roles: adminRole._id });
     if (userProfileCount === 0) {
         if (adminRole && adminRole._id && mongoose.Types.ObjectId.isValid(adminRole._id)) {
-            roles.push(adminRole._id.toHexString());
+            roles.push(adminRole);
         }
     }
 
@@ -29,28 +29,29 @@ export async function setUserProfile(firebaseUID: string, profileData: Partial<U
         roles.map(async (roleId) => {
             const role = await RoleModel.findById(roleId);
             if (role) {
-                return role._id;
+                return role._id.toHexString();
             }
             return null;
         })
     );
 
     const groupIds = await Promise.all(
-        (groups || []).map(async (groupName) => {
+        (groups || []).map(async ({name}) => {
             const group = await GroupModel.findOneAndUpdate(
-                { name: groupName },
-                { name: groupName },
+                { name: name },
+                { name: name },
                 { new: true, upsert: true }
             );
             return group._id;
         })
     );
 
-    return await UserProfileModel.findOneAndUpdate(
+    const updated = await UserProfileModel.findOneAndUpdate(
         { firebaseUID },
-        { $set: { ...rest, roles: roleIds.filter(Boolean), groups: groupIds } },
+        { $set: { ...rest, roles: [...new Set(roleIds)], groups: groupIds } },
         { new: true, upsert: true }
     ).populate('roles').populate('groups');
+    return updated;
 }
 
 export async function getAllRoles() {
