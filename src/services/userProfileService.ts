@@ -5,7 +5,15 @@ import { UserProfile } from '../Types';
 import mongoose from 'mongoose';
 
 export async function getUserProfile(firebaseUID: string) {
-    return await UserProfileModel.findOne({ firebaseUID }).populate('roles').populate('groups');
+let userProfile = await UserProfileModel.findOne({ firebaseUID }).populate('roles').populate('groups');
+if (!userProfile) {
+    userProfile = new UserProfileModel({ firebaseUID });
+    await userProfile?.save();
+    if(userProfile) {
+        userProfile = await UserProfileModel.findOne({ firebaseUID }).populate('roles').populate('groups');
+    }
+}
+return userProfile;
 }
 
 export async function setUserProfile(firebaseUID: string, profileData: Partial<UserProfile>) {
