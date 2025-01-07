@@ -21,7 +21,7 @@ export async function setUserProfile(firebaseUID: string, profileData: Partial<U
     const userProfileCount = await UserProfileModel.countDocuments({ roles: adminRole._id });
     if (userProfileCount === 0) {
         if (adminRole && adminRole._id && mongoose.Types.ObjectId.isValid(adminRole._id)) {
-            roles.push(adminRole);
+            roles.push(adminRole._id.toHexString());
         }
     }
 
@@ -35,20 +35,9 @@ export async function setUserProfile(firebaseUID: string, profileData: Partial<U
         })
     );
 
-    const groupIds = await Promise.all(
-        (groups || []).map(async ({name}) => {
-            const group = await GroupModel.findOneAndUpdate(
-                { name: name },
-                { name: name },
-                { new: true, upsert: true }
-            );
-            return group._id;
-        })
-    );
-
     const updated = await UserProfileModel.findOneAndUpdate(
         { firebaseUID },
-        { $set: { ...rest, roles: [...new Set(roleIds)], groups: groupIds } },
+        { $set: { ...rest, roles: [...new Set(roleIds)], groups: groups } },
         { new: true, upsert: true }
     ).populate('roles').populate('groups');
     return updated;

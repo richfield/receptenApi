@@ -15,8 +15,8 @@ const UserSettingsSchema: Schema = new Schema({
 const UserProfileSchema: Schema = new Schema({
     firebaseUID: { type: String, required: true, unique: true },
     settings: { type: UserSettingsSchema, required: true },
-    roles: [{ type: Schema.Types.ObjectId, ref: 'Role' }],
-    groups: [{ type: Schema.Types.ObjectId, ref: 'Group' }],
+    roles: [{ type: String }],
+    groups: [{ type: String }],
 });
 
 export const UserProfileModel = mongoose.model<UserProfile>('UserProfile', UserProfileSchema);
