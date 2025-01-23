@@ -208,6 +208,18 @@ function fixRecipe(recipe: RecipeData) {
     if (Array.isArray(recipe.recipeCuisine) && recipe.recipeCuisine.length === 1 && recipe.recipeCuisine[0].includes(',')) {
         recipe.recipeCuisine = recipe.recipeCuisine[0].split(',');
     }
+
+    recipe.images = recipe.images?.filter(f => f);
+
+    if (!Array.isArray(recipe.recipeInstructions)) {
+        const instructions = (recipe.recipeInstructions ?? '').split('.')
+        recipe.recipeInstructions = instructions.map(i => ({
+            '@type': 'HowToStep',
+             name: i,
+             text: i
+        }))
+    }
+
     if (needsConversion(recipe.cookTime)) {
         recipe.cookTime = toISO8601Duration(recipe.cookTime);
     }

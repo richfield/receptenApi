@@ -112,3 +112,14 @@ export interface RoleData {
 export interface GroupData {
     name: string;
 }
+
+export type DateLink = {
+    date: Date; // Use the JavaScript Date object
+    recipe: RecipeData; // Assuming RecipeData is already defined as shown before
+};
+
+
+export type DatesResponse = {
+    _id: Date,
+    recipes: RecipeData[]
+}

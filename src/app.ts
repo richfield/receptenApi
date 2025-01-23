@@ -10,6 +10,7 @@ import admin from 'firebase-admin';
 import { Response, NextFunction } from 'express';
 import { AuthenticatedRequest } from './Types';
 import profileRoutes from './routes/profileRoutes';
+import dateLinkRoutes from './routes/dateLinkRoutes';
 
 
 const app = express();
@@ -36,6 +37,10 @@ export const authenticate = async (
     next: NextFunction
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<void | express.Response<any, Record<string, any>>> => {
+    if (req.path === '/calendar/ical') {
+        return next();
+    }
+
     const token = req.headers.authorization?.split('Bearer ')[1];
 
     if (!token) {
@@ -69,6 +74,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use('/recipes', recipeRoutes);
 app.use('/scrape', scrapeRoutes);
 app.use('/profile', profileRoutes);
+app.use('/calendar', dateLinkRoutes)
 
 app.listen(port, () => {
     console.log(`Server is running at http://localhost:${port}`);

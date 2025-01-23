@@ -105,7 +105,10 @@ router.get('/', async (req: Request, res: Response) => {
         // Save recipe to SQLite database
         const newRecipe = await saveRecipe(recipeData);
         if (newRecipe.images && newRecipe.images?.length > 0 && newRecipe._id) {
-            setImageByUrl(newRecipe._id, newRecipe.images[0])
+            const image = newRecipe.images.find(i => i);
+            if (image) {
+                setImageByUrl(newRecipe._id, image);
+            }
         }
 
         // Close the browser
