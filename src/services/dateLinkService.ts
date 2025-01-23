@@ -38,8 +38,7 @@ export const getDatesWithRecipes = async (): Promise<DatesResponse[]> => {
     ]);
     return dateLinks;
 };
-
-// Service to generate iCal data with multiple recipes per date
+// Service to generate iCal data with multiple recipes per date as all-day events
 export const generateIcal = async () => {
     const dateLinks: DatesResponse[] = await DateLinkModel.aggregate([
         { $lookup: { from: 'recipes', localField: 'recipe', foreignField: '_id', as: 'recipe' } },
@@ -52,13 +51,17 @@ export const generateIcal = async () => {
         const { _id, recipes } = link;
 
         // For each recipe on the same date, generate a VEVENT
-        return recipes.map((recipe) => `
+        return recipes.map((recipe) => {
+            const formattedDate = _id.toISOString().split('T')[0]; // Use only the date part (YYYY-MM-DD)
+
+            return `
 BEGIN:VEVENT
 SUMMARY:${recipe.name}
-DTSTART:${_id.toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '')}
-DTEND:${_id.toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '')}
+DTSTART;VALUE=DATE:${formattedDate}
+DTEND;VALUE=DATE:${formattedDate}
 END:VEVENT
-`).join('\n');
+            `;
+        }).join('\n');
     }).join('\n');
 
     return `BEGIN:VCALENDAR
