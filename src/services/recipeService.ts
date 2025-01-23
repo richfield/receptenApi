@@ -209,6 +209,10 @@ function fixRecipe(recipe: RecipeData) {
         recipe.recipeCuisine = recipe.recipeCuisine[0].split(',');
     }
 
+    if(recipe.video === '') {
+        recipe.video = undefined
+    }
+
     recipe.images = recipe.images?.filter(f => f);
 
     if (!Array.isArray(recipe.recipeInstructions)) {
