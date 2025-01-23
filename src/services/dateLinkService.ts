@@ -47,21 +47,20 @@ export const generateIcal = async () => {
         { $sort: { _id: 1 } }
     ]);
 
-    const icalData = dateLinks.map((link: DatesResponse) => {
+    const icalData = dateLinks.flatMap((link: DatesResponse) => {
         const { _id, recipes } = link;
+        const formattedDate = _id.toISOString().split('T')[0];
+        const oneDayLater = new Date(_id);
+        oneDayLater.setDate(_id.getDate() + 1);
+        const formattedNextDate = oneDayLater.toISOString().split('T')[0];
 
-        // For each recipe on the same date, generate a VEVENT
-        return recipes.map((recipe) => {
-            const formattedDate = _id.toISOString().split('T')[0]; // Use only the date part (YYYY-MM-DD)
-
-            return `
+        return recipes.map((recipe) => `
 BEGIN:VEVENT
 SUMMARY:${recipe.name}
 DTSTART;VALUE=DATE:${formattedDate}
-DTEND;VALUE=DATE:${formattedDate}
+DTEND;VALUE=DATE:${formattedNextDate}
 END:VEVENT
-            `;
-        }).join('\n');
+    `);
     }).join('\n');
 
     return `BEGIN:VCALENDAR
@@ -70,4 +69,3 @@ PRODID:-//Example Corp//NONSGML v1.0//EN
 ${icalData}
 END:VCALENDAR`;
 };
-
