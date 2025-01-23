@@ -5,14 +5,13 @@ import { DatesResponse } from '../Types';
 export const linkRecipeToDate = async (date: Date, recipeId: string) => {
     const recipe = await RecipeModel.findById(recipeId);
     if (!recipe) throw new Error('Recipe not found');
-    const normalizedDate = new Date(date.setHours(0, 0, 0, 0));
 
     // Check if the link already exists
-    const existingLink = await DateLinkModel.findOne({ date: normalizedDate, recipe: recipeId });
+    const existingLink = await DateLinkModel.findOne({ date, recipe: recipeId });
     if (existingLink) throw new Error('Recipe already linked to this date');
 
     const dateLink = new DateLinkModel({
-        date: normalizedDate,
+        date,
         recipe: recipeId
     });
 
