@@ -53,19 +53,27 @@ export const generateIcal = async () => {
         const oneDayLater = new Date(_id);
         oneDayLater.setDate(_id.getDate() + 1);
         const formattedNextDate = oneDayLater.toISOString().split('T')[0];
+        const timestamp = new Date().toISOString().replace(/[-:.]/g, '').slice(0, 15) + 'Z';
 
         return recipes.map((recipe) => `
 BEGIN:VEVENT
-SUMMARY:${recipe.name}
+CATEGORIES:Recipes
+DESCRIPTION:${recipe.description || 'No description available.'}
+DTSTAMP:${timestamp}
 DTSTART;VALUE=DATE:${formattedDate}
 DTEND;VALUE=DATE:${formattedNextDate}
+STATUS:CONFIRMED
+SUMMARY:${recipe.name}
+UID:${recipe._id || `recipe_${formattedDate}_${Math.random().toString(36).substr(2, 9)}`}
 END:VEVENT
     `);
     }).join('\n');
 
     return `BEGIN:VCALENDAR
+NAME:Recipe Schedule
+X-WR-CALNAME:Recipe Schedule
+PRODID:-//Your Organization//NONSGML v1.0//EN
 VERSION:2.0
-PRODID:-//Example Corp//NONSGML v1.0//EN
 ${icalData}
 END:VCALENDAR`;
 };
