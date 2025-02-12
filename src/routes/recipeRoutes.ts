@@ -32,12 +32,10 @@ router.post('/save', async (req: Request, res: Response) => {
     const recipeData = req.body;
     try {
         const saved = await recipeService.saveRecipe(recipeData);
-        console.log({saved})
         res.json({ message: 'Recipe saved successfully', _id: saved._id });
     } catch (error) {
-        console.log({error})
         if (error instanceof Error) {
-        res.status(400).json({ error: error.message });
+            res.status(400).json({ error: error.message });
         }
     }
 });

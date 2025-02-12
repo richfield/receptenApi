@@ -144,6 +144,14 @@ export async function searchRecipes(query: string) {
                     }
                 },
                 {
+                    keywords: {
+                        $elemMatch: {
+                            $regex: query,
+                            $options: 'i'
+                        }
+                    }
+                },
+                {
                     'author.name': {
                         $regex: query,
                         $options: 'i'
