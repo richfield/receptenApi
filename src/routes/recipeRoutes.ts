@@ -9,6 +9,7 @@ router.get('/', async (req: Request, res: Response) => {
     try {
         const recipes = await recipeService.getAllRecipes();
         res.json(recipes);
+    // eslint-disable-next-line no-console
     } catch (error) { console.error(error)
         if (error instanceof Error) {
         res.status(500).json({ error: error.message });
@@ -21,6 +22,7 @@ router.get('/get/:id', async (req: Request, res: Response) => {
     try {
         const recipe = await recipeService.getRecipeById(id);
         res.json(recipe);
+    // eslint-disable-next-line no-console
     } catch (error) { console.error(error)
         if(error instanceof Error) {
             res.status(404).json({ error: error.message });
@@ -33,6 +35,7 @@ router.post('/save', async (req: Request, res: Response) => {
     try {
         const saved = await recipeService.saveRecipe(recipeData);
         res.json({ message: 'Recipe saved successfully', _id: saved._id });
+    // eslint-disable-next-line no-console
     } catch (error) { console.error(error)
         if (error instanceof Error) {
             res.status(400).json({ error: error.message });
@@ -45,6 +48,7 @@ router.delete('/:id', async (req: Request, res: Response) => {
     try {
         await recipeService.deleteRecipe(id);
         res.json({ message: 'Recipe deleted successfully' });
+    // eslint-disable-next-line no-console
     } catch (error) { console.error(error)
         if (error instanceof Error) {
         res.status(404).json({ error: error.message });
@@ -57,6 +61,7 @@ router.get('/search', async (req: Request, res: Response) => {
     try {
         const recipes = await recipeService.searchRecipes(query || '');
         res.json(recipes);
+    // eslint-disable-next-line no-console
     } catch (error) { console.error(error)
         if (error instanceof Error) {
         res.status(404).json({ error: error.message });
@@ -77,6 +82,7 @@ router.post('/:recipeId/image/url', async (req: Request, res: Response) => {
 
         const updatedRecipe = await recipeService.setImageByUrl(recipeId, url);
         res.status(200).json(updatedRecipe);
+    // eslint-disable-next-line no-console
     } catch (error) { console.error(error)
         if (error instanceof Error) {
             res.status(500).json({ error: error.message });
@@ -98,6 +104,7 @@ router.post('/:recipeId/image/upload', upload.single('image'), async (req: Reque
 
         const updatedRecipe = await recipeService.setImageByFile(recipeId, file.buffer);
         res.status(200).json(updatedRecipe);
+    // eslint-disable-next-line no-console
     } catch (error) { console.error(error)
         if (error instanceof Error) {
             res.status(500).json({ error: error.message });
@@ -118,6 +125,7 @@ router.get('/:recipeId/image', async (req: Request<{ recipeId: string }>, res: R
 
         res.setHeader('Content-Type', 'image/jpeg');
         res.status(200).send(imageBuffer);
+    // eslint-disable-next-line no-console
     } catch (error) { console.error(error)
         if (error instanceof Error) {
             res.status(500).json({ error: error.message });

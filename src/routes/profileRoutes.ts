@@ -14,6 +14,7 @@ router.get('/me', async (req: Request, res: Response) => {
 
         const profile = await userProfileService.getUserProfile(firebaseUID);
         res.json(profile);
+    // eslint-disable-next-line no-console
     } catch (error) { console.error(error)
         if (error instanceof Error) {
             res.status(500).json({ error: error.message });
@@ -33,6 +34,7 @@ router.post('/me', async (req: Request, res: Response) => {
         const updatedProfile = await userProfileService.setUserProfile(firebaseUID, profileData);
         res.json(updatedProfile);
 
+    // eslint-disable-next-line no-console
     } catch (error) { console.error(error)
         if (error instanceof Error) {
             res.status(500).json({ error: error.message });
@@ -45,6 +47,7 @@ router.get('/roles', async (req: AuthenticatedRequest, res: Response) => {
     try {
         const roles = await userProfileService.getAllRoles();
         res.json(roles);
+    // eslint-disable-next-line no-console
     } catch (error) { console.error(error)
         if (error instanceof Error) {
             res.status(500).json({ error: error.message });
@@ -57,6 +60,7 @@ router.get('/groups', async (req: AuthenticatedRequest, res: Response) => {
     try {
         const groups = await userProfileService.getAllGroups();
         res.json(groups);
+    // eslint-disable-next-line no-console
     } catch (error) { console.error(error)
         if (error instanceof Error) {
             res.status(500).json({ error: error.message });
