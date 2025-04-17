@@ -1,4 +1,4 @@
-import { RecipeData } from '../Types';
+import { Instruction, RecipeData } from '../Types';
 import RecipeModel from '../models/Recipe';
 import mongoose from 'mongoose';
 import axios from 'axios';
@@ -231,12 +231,46 @@ function fixRecipe(recipe: RecipeData) {
     recipe.images = recipe.images?.filter(f => f);
 
     if (!Array.isArray(recipe.recipeInstructions)) {
-        const instructions = (recipe.recipeInstructions ?? '').split('.')
+        const instructions = (recipe.recipeInstructions ?? '').split('.');
         recipe.recipeInstructions = instructions.map(i => ({
             '@type': 'HowToStep',
-             name: i,
-             text: i
-        }))
+            name: i,
+            text: i
+        }));
+    } else if (Array.isArray(recipe.recipeInstructions) && recipe.recipeInstructions.every(i => typeof i === 'string')) {
+        recipe.recipeInstructions = recipe.recipeInstructions.map(i => {
+            return ({
+                '@type': 'HowToStep',
+                name: typeof i === 'string' ? i : '',
+                text: typeof i === 'string' ? i : ''
+            });
+        });
+    }
+
+    if (Array.isArray(recipe.recipeInstructions)) {
+        const allSteps : Instruction[] = [];
+
+        recipe.recipeInstructions.forEach(section => {
+            if (
+                section['@type'] === 'HowToSection' &&
+                Array.isArray(section.itemListElement)
+            ) {
+                section.itemListElement.forEach(step => {
+                    if (step['@type'] === 'HowToStep') {
+                        allSteps.push(step);
+                    }
+                });
+            } else if (section['@type'] === 'HowToStep') {
+                // In case there are HowToSteps directly in recipeInstructions
+                allSteps.push(section);
+            }
+        });
+
+        recipe.recipeInstructions = allSteps;
+    }
+
+    if(Array.isArray(recipe.ingredients)) {
+        recipe.recipeIngredient = recipe.ingredients.map(i => i)
     }
 
     if (needsConversion(recipe.cookTime)) {

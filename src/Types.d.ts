@@ -1,6 +1,14 @@
 import { Request } from 'express';
 
+type Instruction = {
+    '@type': 'HowToStep' | 'HowToSection';
+    name: string;
+    text: string;
+    itemListElement?: Instruction[]; // Nested instructions for sections
+};
+
 export type RecipeData = {
+    ingredients?: string[];
     '@context'?: 'https://schema.org';
     '@type'?: 'Recipe';
     author?: {
@@ -31,11 +39,7 @@ export type RecipeData = {
     cookTime?: string; // Can be an empty string if not provided
     prepTime?: string; // Can be an empty string if not provided
     totalTime?: string;
-    recipeInstructions?: {
-        '@type': 'HowToStep';
-        name: string;
-        text: string;
-    }[];
+    recipeInstructions?: Instruction[];
     recipeYield?: string;
     description?: string;
     recipeCategory?: string | string[];
