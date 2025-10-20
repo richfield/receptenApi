@@ -39,7 +39,7 @@ export const getFirstRecipeForToday = async (): Promise<string | null> => {
         .sort({ date: 1 })
         .populate('recipe')
         .exec();
-        console.log('Link for today:', link);
+        console.log('Link for today:', link, start, end);
     return link && link.recipe ? (link.recipe._id.toString()) : null;
 };
 
