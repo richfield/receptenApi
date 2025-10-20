@@ -37,6 +37,7 @@ export const getFirstRecipeForToday = async (date: Date): Promise<string | null>
         .sort({ date: 1 })
         .populate('recipe')
         .exec();
+        // eslint-disable-next-line no-console
         console.log('Link for today:', link, start, end);
     return link && link.recipe ? (link.recipe._id.toString()) : null;
 };
