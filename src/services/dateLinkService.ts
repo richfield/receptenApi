@@ -1,6 +1,6 @@
 import { DateLinkModel } from '../models/DateLink';
 import RecipeModel from '../models/Recipe';
-import { DatesResponse } from '../Types';
+import { DatesResponse, RecipeData } from "../Types";
 
 export const linkRecipeToDate = async (date: Date, recipeId: string) => {
     const recipe = await RecipeModel.findById(recipeId);
@@ -26,6 +26,20 @@ export const unlinkRecipeFromDate = async (date: Date, recipeId: string) => {
     if (!dateLink) throw new Error('Recipe not linked to this date');
 
     return dateLink;
+};
+
+export const getFirstRecipeForToday = async (): Promise<string | null> => {
+    const start = new Date();
+    start.setHours(0, 0, 0, 0);
+    const end = new Date();
+    end.setHours(23, 59, 59, 999);
+
+    const link = await DateLinkModel
+        .findOne({ date: { $gte: start, $lte: end } })
+        .sort({ date: 1 })
+        .populate('recipe')
+        .exec();
+    return link && link.recipe ? (link.recipe._id.toString()) : null;
 };
 
 // Service to get all dates with their linked recipes
