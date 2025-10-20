@@ -1,6 +1,6 @@
 import { DateLinkModel } from '../models/DateLink';
 import RecipeModel from '../models/Recipe';
-import { DatesResponse, RecipeData } from "../Types";
+import { DatesResponse } from '../Types';
 
 export const linkRecipeToDate = async (date: Date, recipeId: string) => {
     const recipe = await RecipeModel.findById(recipeId);

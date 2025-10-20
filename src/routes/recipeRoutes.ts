@@ -117,6 +117,8 @@ router.post('/:recipeId/image/upload', upload.single('image'), async (req: Reque
 router.get('/:recipeId/image', async (req: Request<{ recipeId: string }>, res: Response) => {
     try {
         const { recipeId } = req.params;
+        // eslint-disable-next-line no-console
+        console.log(`Fetching image for recipeId: ${recipeId}`);
         const imageBuffer = await recipeService.getImageById(recipeId);
 
         if (!imageBuffer) {
