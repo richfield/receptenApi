@@ -33,9 +33,10 @@ router.delete('/link', async (req: Request, res: Response) => {
     }
 });
 
-router.get('/today', async (_req: Request, res: Response) => {
+router.post('/today', async (req: Request, res: Response) => {
     try {
-        const recipe = await getFirstRecipeForToday();
+        const { date } = req.body;
+        const recipe = await getFirstRecipeForToday(new Date(date));
         res.status(200).json(recipe);
     // eslint-disable-next-line no-console
     } catch (error) { console.error(error)
