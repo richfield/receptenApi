@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 import * as recipeService from '../services/recipeService';
 
 import multer from 'multer';
+import path from 'path';
 
 const router = express.Router();
 const upload = multer();
@@ -117,24 +118,24 @@ router.post('/:recipeId/image/upload', upload.single('image'), async (req: Reque
 router.get('/:recipeId/image', async (req: Request<{ recipeId: string }>, res: Response) => {
     try {
         const { recipeId } = req.params;
-        // eslint-disable-next-line no-console
-        console.log(`Fetching image for recipeId: ${recipeId}`);
         const imageBuffer = await recipeService.getImageById(recipeId);
-
-        if (!imageBuffer) {
-            throw new Error('Image not found');
-        }
-
         res.setHeader('Content-Type', 'image/jpeg');
         res.status(200).send(imageBuffer);
-    // eslint-disable-next-line no-console
-    } catch (error) { console.error(error)
-        if (error instanceof Error) {
-            res.status(500).json({ error: error.message });
+    } catch (error) {
+        if (error instanceof recipeService.ImageNotFoundError) {
+            // Serve default image file from /public/default.jpg
+            const defaultImagePath = path.join(process.cwd(), 'public', 'default.jpg');
+            res.setHeader('Content-Type', 'image/jpeg');
+            res.status(200);//.send(defaultImageBuffer);
+            res.sendFile(defaultImagePath, (err) => {
+                // eslint-disable-next-line no-console
+                if (err) { console.error('Error sending default image', err); res.status(500).json({ error: 'Failed to send default image' }); }
+            });
         } else {
-            res.status(500).json(error);
+            res.status(500).json({ error: 'Internal Server Error' });
         }
     }
 });
+
 
 export default router;
