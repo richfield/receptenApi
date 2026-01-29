@@ -19,7 +19,7 @@ router.get('/', async (req: Request, res: Response) => {
     }
 });
 
-router.get('/get/:id', async (req: Request, res: Response) => {
+router.get('/get/:id', async (req: Request<{ id: string }>, res: Response) => {
     const { id } = req.params;
     try {
         const recipe = await recipeService.getRecipeById(id);
@@ -47,7 +47,7 @@ router.post('/save', async (req: Request, res: Response) => {
     }
 });
 
-router.delete('/:id', async (req: Request, res: Response) => {
+router.delete('/:id', async (req: Request<{ id: string }>, res: Response) => {
     const { id } = req.params;
     try {
         await recipeService.deleteRecipe(id);
@@ -77,7 +77,7 @@ router.get('/search', async (req: Request, res: Response) => {
 
 
 // Route to set image by recipeId and URL
-router.post('/:recipeId/image/url', async (req: Request, res: Response) => {
+router.post('/:recipeId/image/url', async (req: Request<{ recipeId: string }>, res: Response) => {
     try {
         const { recipeId } = req.params;
         const { url } = req.body;
