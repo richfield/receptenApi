@@ -10,8 +10,9 @@ router.post('/link', async (req: Request, res: Response) => {
     try {
         const linked = await linkRecipeToDate(new Date(date), recipeId);
         res.status(201).json(linked);
-    // eslint-disable-next-line no-console
-    } catch (error) { console.error(error)
+    } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error({error, req, res})
         if (error instanceof Error) {
             res.status(500).json({ message: error.message });
         }
@@ -25,8 +26,9 @@ router.delete('/link', async (req: Request, res: Response) => {
     try {
         const unlinked = await unlinkRecipeFromDate(new Date(date), recipeId);
         res.status(200).json(unlinked);
-    // eslint-disable-next-line no-console
-    } catch (error) { console.error(error)
+    } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error({error, req, res})
         if (error instanceof Error) {
             res.status(400).json({ message: error.message });
         }
@@ -38,8 +40,9 @@ router.post('/today', async (req: Request, res: Response) => {
         const { date } = req.body;
         const recipe = await getFirstRecipeForToday(new Date(date));
         res.status(200).json(recipe);
-    // eslint-disable-next-line no-console
-    } catch (error) { console.error(error)
+    } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error({error, req, res})
         if (error instanceof Error) {
             res.status(500).json({ message: error.message });
     }
@@ -51,8 +54,9 @@ router.get('/dates-with-recipes', async (_req: Request, res: Response) => {
     try {
         const datesWithRecipes = await getDatesWithRecipes();
         res.status(200).json(datesWithRecipes);
-    // eslint-disable-next-line no-console
-    } catch (error) { console.error(error)
+    } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error({error, _req, res})
         if (error instanceof Error) {
             res.status(500).json({ message: error.message });
         }
@@ -65,8 +69,9 @@ router.get('/ical', async (_req: Request, res: Response) => {
         const icalData = await generateIcal();
         res.setHeader('Content-Type', 'text/calendar');
         res.send(icalData);
-    // eslint-disable-next-line no-console
-    } catch (error) { console.error(error)
+    } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error({error, _req, res})
         if (error instanceof Error) {
             res.status(500).json({ message: error.message });
         }

@@ -134,7 +134,7 @@ router.get('/', async (req: Request, res: Response) => {
         res.json(newRecipe);
     } catch (error) {
         // eslint-disable-next-line no-console
-        console.error({ error });
+        console.error({ error, req, res });
         res.json(error);
     }
 });

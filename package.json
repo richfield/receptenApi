@@ -26,8 +26,11 @@
     "nodemon": "^3.1.7",
     "puppeteer": "^23.6.0",
     "sqlite": "^5.1.1",
-    "sqlite3": "^5.1.7",
+    "sqlite3": "^5.0.2",
     "uuid": "^11.0.3"
+  },
+  "overrides": {
+    "tar": "^7.5.7"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",
