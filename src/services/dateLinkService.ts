@@ -51,39 +51,52 @@ export const getDatesWithRecipes = async (): Promise<DatesResponse[]> => {
     ]);
     return dateLinks;
 };
-// RFC5545 line folding: lines must be max 75 characters
-const foldIcalLine = (line: string): string => {
-    const limit = 75;
-    if (line.length <= limit) return line;
+// ─────────────────────────────────────────────
+// Helpers
+// ─────────────────────────────────────────────
 
-    let result = '';
-    let pos = 0;
-    while (pos < line.length) {
-        const chunk = line.slice(pos, pos + limit);
-        result += (pos === 0 ? chunk : '\r\n ' + chunk);
-        pos += limit;
-    }
-    return result;
+const formatDateLocal = (date: Date): string => {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}${m}${d}`;
 };
 
-// Safely escape newlines for DESCRIPTION fields
 const escapeIcalText = (text: string): string => {
     return text
+        .replace(/\\/g, '\\\\')
         .replace(/\r?\n/g, '\\n')
         .replace(/;/g, '\\;')
         .replace(/,/g, '\\,')
         .trim();
 };
 
+const foldIcalLine = (line: string): string => {
+    const limit = 75;
+    if (line.length <= limit) return line;
+
+    let out = '';
+    let pos = 0;
+
+    while (pos < line.length) {
+        const chunk = line.slice(pos, pos + limit);
+        out += (pos === 0 ? chunk : '\r\n ' + chunk);
+        pos += limit;
+    }
+
+    return out;
+};
+
+// ─────────────────────────────────────────────
+// Main function
+// ─────────────────────────────────────────────
+
 export const generateIcal = async () => {
     const now = new Date();
-
-    // Start of last month
     const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
 
     const dateLinks: DatesResponse[] = await DateLinkModel.aggregate([
         { $match: { date: { $gte: lastMonthStart } } },
-
         {
             $lookup: {
                 from: 'recipes',
@@ -93,7 +106,6 @@ export const generateIcal = async () => {
             }
         },
         { $unwind: '$recipe' },
-
         {
             $group: {
                 _id: '$date',
@@ -110,23 +122,32 @@ export const generateIcal = async () => {
 
     const events = dateLinks.flatMap((link) => {
         const date = link._id;
-        const formattedDate = date.toISOString().slice(0, 10).replace(/-/g, '');
-        const nextDate = new Date(date);
-        nextDate.setDate(date.getDate() + 1);
-        const formattedNextDate = nextDate.toISOString().slice(0, 10).replace(/-/g, '');
 
-        return link.recipes.map(recipe => {
-            const description = escapeIcalText(recipe.description || 'No description available.');
-            const summary = escapeIcalText(recipe.name || 'Untitled');
-            const uid = `${recipe._id}_${formattedDate}`;
+        const startStr = formatDateLocal(date);
+        const next = new Date(date);
+        next.setDate(date.getDate() + 1);
+        const endStr = formatDateLocal(next);
+
+        return link.recipes.map((recipe) => {
+            const recipeUrl = `https://recepten.ten-velde.com/recipe/${recipe._id}`;
+
+            const descriptionText =
+                (recipe.description?.trim() || 'Geen beschrijving beschikbaar.') +
+                `\nRecept: ${recipeUrl}`;
+
+            const description = escapeIcalText(descriptionText);
+            const summary = escapeIcalText(recipe.name || 'Onbekend gerecht');
+
+            const uid = `${recipe._id}_${startStr}`;
 
             return [
                 'BEGIN:VEVENT',
                 'CATEGORIES:Recipes',
+                foldIcalLine(`URL:${recipeUrl}`),
                 foldIcalLine(`DESCRIPTION:${description}`),
                 `DTSTAMP:${timestamp}`,
-                `DTSTART;VALUE=DATE:${formattedDate}`,
-                `DTEND;VALUE=DATE:${formattedNextDate}`,
+                `DTSTART;VALUE=DATE:${startStr}`,
+                `DTEND;VALUE=DATE:${endStr}`,
                 'STATUS:CONFIRMED',
                 foldIcalLine(`SUMMARY:${summary}`),
                 `UID:${uid}`,
@@ -137,10 +158,12 @@ export const generateIcal = async () => {
 
     return [
         'BEGIN:VCALENDAR',
-        'PRODID:-//Your Organization//NONSGML v1.0//EN',
+        'PRODID:-//Ten Velde Recepten//ICS Generator//NL',
         'VERSION:2.0',
-        'NAME:Recipe Schedule',
-        'X-WR-CALNAME:Recipe Schedule',
+        'CALSCALE:GREGORIAN',
+        'METHOD:PUBLISH',
+        'X-WR-CALNAME:Recepten Kalender',
+        'NAME:Recepten Kalender',
         events,
         'END:VCALENDAR'
     ].join('\r\n');
