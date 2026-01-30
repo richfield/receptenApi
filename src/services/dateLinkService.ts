@@ -53,7 +53,16 @@ export const getDatesWithRecipes = async (): Promise<DatesResponse[]> => {
 };
 // Service to generate iCal data with multiple recipes per date as all-day events
 export const generateIcal = async () => {
+
+    const now = new Date();
+
+    const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
     const dateLinks: DatesResponse[] = await DateLinkModel.aggregate([
+        {
+            $match: {
+                date: { $gte: lastMonthStart }
+            }
+        },
         { $lookup: { from: 'recipes', localField: 'recipe', foreignField: '_id', as: 'recipe' } },
         { $unwind: '$recipe' }, // Deconstruct recipe array
         { $group: { _id: '$date', recipes: { $push: '$recipe' } } },
