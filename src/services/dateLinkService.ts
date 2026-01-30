@@ -55,13 +55,23 @@ export const getDatesWithRecipes = async (): Promise<DatesResponse[]> => {
 // Helpers
 // ─────────────────────────────────────────────
 
-const formatDateLocal = (date: Date): string => {
-    const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, '0');
-    const d = String(date.getDate()).padStart(2, '0');
-    return `${y}${m}${d}`;
+// Convert MongoDB UTC date to *local midnight*
+// Ensures Google Calendar does NOT shift events one day earlier
+const toLocalMidnight = (d: Date): Date => {
+    const local = new Date(d);
+    local.setMinutes(local.getMinutes() - local.getTimezoneOffset());
+    return new Date(local.getFullYear(), local.getMonth(), local.getDate());
 };
 
+// Format as YYYYMMDD in *local time*
+const formatDateLocal = (d: Date): string => {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}${m}${day}`;
+};
+
+// Escape reserved ICS characters and convert newlines → \n
 const escapeIcalText = (text: string): string => {
     return text
         .replace(/\\/g, '\\\\')
@@ -71,6 +81,7 @@ const escapeIcalText = (text: string): string => {
         .trim();
 };
 
+// RFC5545 line folding at 75 chars
 const foldIcalLine = (line: string): string => {
     const limit = 75;
     if (line.length <= limit) return line;
@@ -80,7 +91,7 @@ const foldIcalLine = (line: string): string => {
 
     while (pos < line.length) {
         const chunk = line.slice(pos, pos + limit);
-        out += (pos === 0 ? chunk : '\r\n ' + chunk);
+        out += pos === 0 ? chunk : '\r\n ' + chunk;
         pos += limit;
     }
 
@@ -88,7 +99,7 @@ const foldIcalLine = (line: string): string => {
 };
 
 // ─────────────────────────────────────────────
-// Main function
+// Main generator
 // ─────────────────────────────────────────────
 
 export const generateIcal = async () => {
@@ -121,11 +132,13 @@ export const generateIcal = async () => {
         .slice(0, 15) + 'Z';
 
     const events = dateLinks.flatMap((link) => {
-        const date = link._id;
+        // FIX: Convert Mongo UTC → Local midnight
+        const localDate = toLocalMidnight(link._id);
 
-        const startStr = formatDateLocal(date);
-        const next = new Date(date);
-        next.setDate(date.getDate() + 1);
+        const startStr = formatDateLocal(localDate);
+
+        const next = new Date(localDate);
+        next.setDate(localDate.getDate() + 1);
         const endStr = formatDateLocal(next);
 
         return link.recipes.map((recipe) => {
