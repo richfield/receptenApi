@@ -51,51 +51,97 @@ export const getDatesWithRecipes = async (): Promise<DatesResponse[]> => {
     ]);
     return dateLinks;
 };
-// Service to generate iCal data with multiple recipes per date as all-day events
-export const generateIcal = async () => {
+// RFC5545 line folding: lines must be max 75 characters
+const foldIcalLine = (line: string): string => {
+    const limit = 75;
+    if (line.length <= limit) return line;
 
+    let result = '';
+    let pos = 0;
+    while (pos < line.length) {
+        const chunk = line.slice(pos, pos + limit);
+        result += (pos === 0 ? chunk : '\r\n ' + chunk);
+        pos += limit;
+    }
+    return result;
+};
+
+// Safely escape newlines for DESCRIPTION fields
+const escapeIcalText = (text: string): string => {
+    return text
+        .replace(/\r?\n/g, '\\n')
+        .replace(/;/g, '\\;')
+        .replace(/,/g, '\\,')
+        .trim();
+};
+
+export const generateIcal = async () => {
     const now = new Date();
 
+    // Start of last month
     const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+
     const dateLinks: DatesResponse[] = await DateLinkModel.aggregate([
+        { $match: { date: { $gte: lastMonthStart } } },
+
         {
-            $match: {
-                date: { $gte: lastMonthStart }
+            $lookup: {
+                from: 'recipes',
+                localField: 'recipe',
+                foreignField: '_id',
+                as: 'recipe'
             }
         },
-        { $lookup: { from: 'recipes', localField: 'recipe', foreignField: '_id', as: 'recipe' } },
-        { $unwind: '$recipe' }, // Deconstruct recipe array
-        { $group: { _id: '$date', recipes: { $push: '$recipe' } } },
+        { $unwind: '$recipe' },
+
+        {
+            $group: {
+                _id: '$date',
+                recipes: { $push: '$recipe' }
+            }
+        },
         { $sort: { _id: 1 } }
     ]);
 
-    const icalData = dateLinks.flatMap((link: DatesResponse) => {
-        const { _id, recipes } = link;
-        const formattedDate = _id.toISOString().split('T')[0];
-        const oneDayLater = new Date(_id);
-        oneDayLater.setDate(_id.getDate() + 1);
-        const formattedNextDate = oneDayLater.toISOString().split('T')[0];
-        const timestamp = new Date().toISOString().replace(/[-:.]/g, '').slice(0, 15) + 'Z';
+    const timestamp = new Date()
+        .toISOString()
+        .replace(/[-:.]/g, '')
+        .slice(0, 15) + 'Z';
 
-        return recipes.map((recipe) => `
-BEGIN:VEVENT
-CATEGORIES:Recipes
-DESCRIPTION:${recipe.description || 'No description available.'}
-DTSTAMP:${timestamp}
-DTSTART;VALUE=DATE:${formattedDate}
-DTEND;VALUE=DATE:${formattedNextDate}
-STATUS:CONFIRMED
-SUMMARY:${recipe.name}
-UID:${recipe._id || `recipe_${formattedDate}_${Math.random().toString(36).substr(2, 9)}`}
-END:VEVENT
-    `);
-    }).join('\n');
+    const events = dateLinks.flatMap((link) => {
+        const date = link._id;
+        const formattedDate = date.toISOString().slice(0, 10).replace(/-/g, '');
+        const nextDate = new Date(date);
+        nextDate.setDate(date.getDate() + 1);
+        const formattedNextDate = nextDate.toISOString().slice(0, 10).replace(/-/g, '');
 
-    return `BEGIN:VCALENDAR
-NAME:Recipe Schedule
-X-WR-CALNAME:Recipe Schedule
-PRODID:-//Your Organization//NONSGML v1.0//EN
-VERSION:2.0
-${icalData}
-END:VCALENDAR`;
+        return link.recipes.map(recipe => {
+            const description = escapeIcalText(recipe.description || 'No description available.');
+            const summary = escapeIcalText(recipe.name || 'Untitled');
+            const uid = `${recipe._id}_${formattedDate}`;
+
+            return [
+                'BEGIN:VEVENT',
+                'CATEGORIES:Recipes',
+                foldIcalLine(`DESCRIPTION:${description}`),
+                `DTSTAMP:${timestamp}`,
+                `DTSTART;VALUE=DATE:${formattedDate}`,
+                `DTEND;VALUE=DATE:${formattedNextDate}`,
+                'STATUS:CONFIRMED',
+                foldIcalLine(`SUMMARY:${summary}`),
+                `UID:${uid}`,
+                'END:VEVENT'
+            ].join('\r\n');
+        });
+    }).join('\r\n');
+
+    return [
+        'BEGIN:VCALENDAR',
+        'PRODID:-//Your Organization//NONSGML v1.0//EN',
+        'VERSION:2.0',
+        'NAME:Recipe Schedule',
+        'X-WR-CALNAME:Recipe Schedule',
+        events,
+        'END:VCALENDAR'
+    ].join('\r\n');
 };
