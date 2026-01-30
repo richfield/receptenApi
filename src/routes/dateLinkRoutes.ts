@@ -67,6 +67,8 @@ router.get('/dates-with-recipes', async (_req: Request, res: Response) => {
 router.get('/ical', async (_req: Request, res: Response) => {
     try {
         const icalData = await generateIcal();
+        // eslint-disable-next-line no-console
+        console.log({icalData})
         res.setHeader('Content-Type', 'text/calendar');
         res.send(icalData);
     } catch (error) {

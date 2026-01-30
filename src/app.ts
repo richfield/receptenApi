@@ -37,8 +37,8 @@ export const authenticate = async (
     next: NextFunction
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<void | express.Response<any, Record<string, any>>> => {
-    console.log({path: req.path})
     if (req.path === '/calendar/ical') {
+        console.log({req, n:next.name})
         return next();
     }
 
