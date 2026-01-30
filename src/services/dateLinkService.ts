@@ -55,20 +55,11 @@ export const getDatesWithRecipes = async (): Promise<DatesResponse[]> => {
 // Helpers
 // ─────────────────────────────────────────────
 
-// Convert MongoDB UTC date to *local midnight*
-// Ensures Google Calendar does NOT shift events one day earlier
-const toLocalMidnight = (d: Date): Date => {
-    const local = new Date(d);
-    local.setMinutes(local.getMinutes() - local.getTimezoneOffset());
-    return new Date(local.getFullYear(), local.getMonth(), local.getDate());
-};
-
-// Format as YYYYMMDD in *local time*
-const formatDateLocal = (d: Date): string => {
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    return `${y}${m}${day}`;
+// Format as YYYYMMDD in local time (en-CA gives ISO yyyy-mm-dd)
+const toLocalDateString = (d: Date): string => {
+    return d
+        .toLocaleDateString('en-CA')   // timezone-safe, gives yyyy-mm-dd
+        .replace(/-/g, '');            // ICS requires yyyymmdd
 };
 
 // Escape reserved ICS characters and convert newlines → \n
@@ -81,7 +72,7 @@ const escapeIcalText = (text: string): string => {
         .trim();
 };
 
-// RFC5545 line folding at 75 chars
+// RFC5545: fold long lines at 75 chars
 const foldIcalLine = (line: string): string => {
     const limit = 75;
     if (line.length <= limit) return line;
@@ -94,12 +85,11 @@ const foldIcalLine = (line: string): string => {
         out += pos === 0 ? chunk : '\r\n ' + chunk;
         pos += limit;
     }
-
     return out;
 };
 
 // ─────────────────────────────────────────────
-// Main generator
+// Main ICS Generator
 // ─────────────────────────────────────────────
 
 export const generateIcal = async () => {
@@ -126,20 +116,22 @@ export const generateIcal = async () => {
         { $sort: { _id: 1 } }
     ]);
 
+    // ICS timestamp
     const timestamp = new Date()
         .toISOString()
         .replace(/[-:.]/g, '')
         .slice(0, 15) + 'Z';
 
     const events = dateLinks.flatMap((link) => {
-        // FIX: Convert Mongo UTC → Local midnight
-        const localDate = toLocalMidnight(link._id);
+        // Convert MongoDB UTC timestamp → local date
+        // (No timezone math needed, JS Date already handles it)
+        const localDate = new Date(link._id);
 
-        const startStr = formatDateLocal(localDate);
+        const startStr = toLocalDateString(localDate);
 
         const next = new Date(localDate);
         next.setDate(localDate.getDate() + 1);
-        const endStr = formatDateLocal(next);
+        const endStr = toLocalDateString(next);
 
         return link.recipes.map((recipe) => {
             const recipeUrl = `https://recepten.ten-velde.com/recipe/${recipe._id}`;
@@ -175,8 +167,11 @@ export const generateIcal = async () => {
         'VERSION:2.0',
         'CALSCALE:GREGORIAN',
         'METHOD:PUBLISH',
+
+        // Calendar name shown in Google Calendar
         'X-WR-CALNAME:Recepten Kalender',
         'NAME:Recepten Kalender',
+
         events,
         'END:VCALENDAR'
     ].join('\r\n');
