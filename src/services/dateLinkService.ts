@@ -125,8 +125,9 @@ export const generateIcal = async () => {
     const events = dateLinks.flatMap((link) => {
         // Convert MongoDB UTC timestamp → local date
         // (No timezone math needed, JS Date already handles it)
-        const localDate = new Date(link._id);
-
+        const dbDate =  new Date(link._id);
+        const localDate = new Date(dbDate);
+        localDate.setDate(dbDate.getDate() + 1);
         const startStr = toLocalDateString(localDate);
 
         const next = new Date(localDate);
