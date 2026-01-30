@@ -67,16 +67,17 @@ router.get('/dates-with-recipes', async (_req: Request, res: Response) => {
 router.get('/ical', async (_req: Request, res: Response) => {
     try {
         const icalData = await generateIcal();
-        // eslint-disable-next-line no-console
-        console.log({icalData})
-        res.setHeader('Content-Type', 'text/calendar');
+
+        res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
+        res.setHeader('Content-Disposition', 'inline; filename="recipes.ics"');
+
         res.send(icalData);
     } catch (error) {
         // eslint-disable-next-line no-console
-        console.error({error, _req, res})
-        if (error instanceof Error) {
-            res.status(500).json({ message: error.message });
-        }
+        console.error(error);
+        res.status(500).json({
+            message: error instanceof Error ? error.message : 'Unknown error'
+        });
     }
 });
 
