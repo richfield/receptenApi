@@ -39,8 +39,9 @@ export async function saveRecipe(recipe: RecipeData): Promise<RecipeData> {
         );
         return existingRecipe;
 
-    // eslint-disable-next-line no-console
-    } catch (error) { console.error(error)
+        // eslint-disable-next-line no-console
+    } catch (error) {
+        console.error(error)
         if (error instanceof Error) {
             throw new Error(`Error saving recipe: ${error.message}`);
         } else {
@@ -75,10 +76,12 @@ export async function setImageByUrl(recipeId: string, url: string) {
             await newImage.save();
             return newImage.toObject();
         }
-
-
-    // eslint-disable-next-line no-console
-    } catch (error) { console.error(error)
+    } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error(error)
+        if (error instanceof Error) {
+            throw new Error(`Error setting image by URL: ${error.message}`);
+        }
         // eslint-disable-next-line no-console
         console.error('Error setting image by URL:', error);
         throw new Error('Failed to set image');
@@ -99,8 +102,9 @@ export async function setImageByFile(recipeId: string, imageBuffer: Buffer) {
             const newImage = new RecipeImageModel({ recipeId, image: imageBuffer });
             await newImage.save();
         }
-    // eslint-disable-next-line no-console
-    } catch (error) { console.error(error)
+        // eslint-disable-next-line no-console
+    } catch (error) {
+        console.error(error)
         if (error instanceof Error) {
             throw new Error(`Error setting image by file: ${error.message}`);
         } else {
@@ -119,8 +123,9 @@ export async function getRecipeById(findId: string) {
         } else {
             throw new Error('Recipe not found by id');
         }
-    // eslint-disable-next-line no-console
-    } catch (error) { console.error(error)
+        // eslint-disable-next-line no-console
+    } catch (error) {
+        console.error(error)
         // eslint-disable-next-line no-console
         console.error('Error getting recipe by ID:', error);
         throw new Error('Failed to retrieve recipe');
@@ -132,8 +137,9 @@ export async function getAllRecipes() {
     try {
         const recipes = await RecipeModel.find();
         return recipes.map((recipe: { toObject: () => RecipeData; }) => recipe.toObject());
-    // eslint-disable-next-line no-console
-    } catch (error) { console.error(error)
+        // eslint-disable-next-line no-console
+    } catch (error) {
+        console.error(error)
         // eslint-disable-next-line no-console
         console.error('Error getting all recipes:', error);
         throw new Error('Failed to retrieve recipes');
@@ -173,8 +179,9 @@ export async function searchRecipes(query: string) {
         };
         const recipes = await RecipeModel.find(searchQuery);
         return recipes.map((recipe: { toObject: () => RecipeData; }) => recipe.toObject());
-    // eslint-disable-next-line no-console
-    } catch (error) { console.error(error)
+        // eslint-disable-next-line no-console
+    } catch (error) {
+        console.error(error)
         // eslint-disable-next-line no-console
         console.error('Error searching recipes:', error);
         throw new Error('Failed to search recipes');
@@ -189,8 +196,9 @@ export async function deleteRecipe(id: string) {
         if (result.deletedCount === 0) {
             throw new Error('Recipe not found');
         }
-    // eslint-disable-next-line no-console
-    } catch (error) { console.error(error)
+        // eslint-disable-next-line no-console
+    } catch (error) {
+        console.error(error)
         // eslint-disable-next-line no-console
         console.error('Error deleting recipe:', error);
         throw new Error('Failed to delete recipe');
@@ -230,7 +238,7 @@ function fixRecipe(recipe: RecipeData) {
         recipe.recipeCuisine = recipe.recipeCuisine[0].split(',');
     }
 
-    if(recipe.video === '') {
+    if (recipe.video === '') {
         recipe.video = undefined
     }
 
@@ -254,7 +262,7 @@ function fixRecipe(recipe: RecipeData) {
     }
 
     if (Array.isArray(recipe.recipeInstructions)) {
-        const allSteps : Instruction[] = [];
+        const allSteps: Instruction[] = [];
 
         recipe.recipeInstructions.forEach(section => {
             if (
@@ -275,7 +283,7 @@ function fixRecipe(recipe: RecipeData) {
         recipe.recipeInstructions = allSteps;
     }
 
-    if(Array.isArray(recipe.ingredients)) {
+    if (Array.isArray(recipe.ingredients)) {
         recipe.recipeIngredient = recipe.ingredients.map(i => i)
     }
 
