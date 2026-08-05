@@ -39,8 +39,8 @@ export async function saveRecipe(recipe: RecipeData): Promise<RecipeData> {
         );
         return existingRecipe;
 
-        // eslint-disable-next-line no-console
     } catch (error) {
+        // eslint-disable-next-line no-console
         console.error(error)
         if (error instanceof Error) {
             throw new Error(`Error saving recipe: ${error.message}`);
@@ -80,11 +80,13 @@ export async function setImageByUrl(recipeId: string, url: string) {
         // eslint-disable-next-line no-console
         console.error(error)
         if (error instanceof Error) {
-            throw new Error(`Error setting image by URL: ${error.message}`);
+            // eslint-disable-next-line no-console
+            console.error(`Error setting image by URL: ${error.message}`);
+            return null;
         }
         // eslint-disable-next-line no-console
         console.error('Error setting image by URL:', error);
-        throw new Error('Failed to set image');
+        return null;
     }
 }
 
@@ -102,8 +104,8 @@ export async function setImageByFile(recipeId: string, imageBuffer: Buffer) {
             const newImage = new RecipeImageModel({ recipeId, image: imageBuffer });
             await newImage.save();
         }
-        // eslint-disable-next-line no-console
     } catch (error) {
+        // eslint-disable-next-line no-console
         console.error(error)
         if (error instanceof Error) {
             throw new Error(`Error setting image by file: ${error.message}`);
@@ -123,8 +125,9 @@ export async function getRecipeById(findId: string) {
         } else {
             throw new Error('Recipe not found by id');
         }
-        // eslint-disable-next-line no-console
+
     } catch (error) {
+        // eslint-disable-next-line no-console
         console.error(error)
         // eslint-disable-next-line no-console
         console.error('Error getting recipe by ID:', error);
@@ -137,8 +140,9 @@ export async function getAllRecipes() {
     try {
         const recipes = await RecipeModel.find();
         return recipes.map((recipe: { toObject: () => RecipeData; }) => recipe.toObject());
-        // eslint-disable-next-line no-console
+
     } catch (error) {
+        // eslint-disable-next-line no-console
         console.error(error)
         // eslint-disable-next-line no-console
         console.error('Error getting all recipes:', error);
@@ -179,8 +183,9 @@ export async function searchRecipes(query: string) {
         };
         const recipes = await RecipeModel.find(searchQuery);
         return recipes.map((recipe: { toObject: () => RecipeData; }) => recipe.toObject());
-        // eslint-disable-next-line no-console
+
     } catch (error) {
+        // eslint-disable-next-line no-console
         console.error(error)
         // eslint-disable-next-line no-console
         console.error('Error searching recipes:', error);
@@ -196,8 +201,9 @@ export async function deleteRecipe(id: string) {
         if (result.deletedCount === 0) {
             throw new Error('Recipe not found');
         }
-        // eslint-disable-next-line no-console
+
     } catch (error) {
+        // eslint-disable-next-line no-console
         console.error(error)
         // eslint-disable-next-line no-console
         console.error('Error deleting recipe:', error);
