@@ -6,6 +6,15 @@ import path from 'path';
 
 const router = express.Router();
 const upload = multer();
+/**
+ * @openapi
+ * /recipes:
+ *   get:
+ *     summary: Get all recipes
+ *     responses:
+ *       200:
+ *         description: Array of recipes
+ */
 router.get('/', async (req: Request, res: Response) => {
     try {
         const recipes = await recipeService.getAllRecipes();
@@ -19,6 +28,21 @@ router.get('/', async (req: Request, res: Response) => {
     }
 });
 
+/**
+ * @openapi
+ * /recipes/get/{id}:
+ *   get:
+ *     summary: Get a recipe by id
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: The recipe
+ */
 router.get('/get/:id', async (req: Request<{ id: string }>, res: Response) => {
     const { id } = req.params;
     try {
@@ -33,6 +57,21 @@ router.get('/get/:id', async (req: Request<{ id: string }>, res: Response) => {
     }
 });
 
+/**
+ * @openapi
+ * /recipes/save:
+ *   post:
+ *     summary: Save a recipe
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/RecipeData'
+ *     responses:
+ *       200:
+ *         description: Saved result
+ */
 router.post('/save', async (req: Request, res: Response) => {
     const recipeData = req.body;
     try {

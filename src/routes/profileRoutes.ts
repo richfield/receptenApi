@@ -4,6 +4,15 @@ import { AuthenticatedRequest } from '../Types';
 
 const router = express.Router();
 
+/**
+ * @openapi
+ * /profile/me:
+ *   get:
+ *     summary: Get the authenticated user's profile
+ *     responses:
+ *       200:
+ *         description: User profile
+ */
 router.get('/me', async (req: Request, res: Response) => {
     try {
         const firebaseUID = (req as AuthenticatedRequest).user?.uid;
@@ -23,6 +32,21 @@ router.get('/me', async (req: Request, res: Response) => {
     }
 });
 
+/**
+ * @openapi
+ * /profile/me:
+ *   post:
+ *     summary: Update the authenticated user's profile
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/UserProfile'
+ *     responses:
+ *       200:
+ *         description: Updated profile
+ */
 router.post('/me', async (req: Request, res: Response) => {
     try {
         const firebaseUID = (req as AuthenticatedRequest).user?.uid;

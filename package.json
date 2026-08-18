@@ -6,7 +6,8 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/app.js",
-    "dev": "nodemon --watch src --exec ts-node src/app.ts"
+    "dev": "nodemon --watch src --exec ts-node src/app.ts",
+    "generate:openapi": "node scripts/generate-openapi.js"
   },
   "keywords": [],
   "author": "",
@@ -43,7 +44,10 @@
     "eslint-plugin-prettier": "^5.2.1",
     "globals": "^15.14.0",
     "prettier": "^3.4.2",
+    "swagger-jsdoc": "^6.3.0",
+    "swagger-ui-express": "^5.0.1",
     "ts-node": "^10.9.2",
+    "tsoa": "^7.0.0-alpha.0",
     "typescript": "^5.7.2",
     "typescript-eslint": "^8.18.1"
   }
