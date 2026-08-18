@@ -89,4 +89,21 @@ router.post('/:id/claim', async (req: Request<{ id: string }>, res: Response) =>
   }
 });
 
+// Allow a user to remove their own claim and put the item back in the freezer
+router.post('/:id/unclaim', async (req: Request<{ id: string }>, res: Response) => {
+  try {
+    const userId = (req as AuthenticatedRequest).user?.uid;
+    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+    try {
+      const updated = await leftoverService.unclaimLeftover(req.params.id, userId);
+      res.json(updated);
+    } catch (e) {
+      return res.status(403).json({ error: e instanceof Error ? e.message : 'Forbidden' });
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({ error: err instanceof Error ? err.message : 'Unknown error' });
+  }
+});
+
 export default router;

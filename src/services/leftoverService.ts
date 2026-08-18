@@ -43,6 +43,18 @@ export const claimLeftover = async (leftoverId: string, userId: string) => {
   return updated;
 };
 
+export const unclaimLeftover = async (leftoverId: string, userId: string) => {
+  // Only allow the user who claimed it to unclaim it. Set it back to inFreezer.
+  const updated = await LeftoverModel.findOneAndUpdate(
+    { _id: leftoverId, inFreezer: false, claimedBy: userId },
+    { $set: { inFreezer: true, claimedBy: null, claimedAt: null } },
+    { new: true }
+  ).populate('recipe').exec();
+
+  if (!updated) throw new Error('Unable to unclaim leftover (not claimed by user or not found)');
+  return updated;
+};
+
 export const getLeftoverById = async (id: string) => {
   return LeftoverModel.findById(id).populate('recipe').exec();
 };
