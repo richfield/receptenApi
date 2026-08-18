@@ -8,6 +8,21 @@ import { IRecipe } from 'html-recipe-parser/dist/interfaces';
 
 const router = express.Router();
 
+/**
+ * @openapi
+ * /scrape:
+ *   get:
+ *     summary: Scrape a URL to extract recipe data
+ *     parameters:
+ *       - in: query
+ *         name: url
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Parsed and saved recipe
+ */
 router.get('/', async (req: Request, res: Response) => {
     try {
         const myUrl = req.query['url'] as string;

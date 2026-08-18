@@ -86,6 +86,21 @@ router.post('/save', async (req: Request, res: Response) => {
     }
 });
 
+/**
+ * @openapi
+ * /recipes/{id}:
+ *   delete:
+ *     summary: Delete a recipe by id
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Deletion result
+ */
 router.delete('/:id', async (req: Request<{ id: string }>, res: Response) => {
     const { id } = req.params;
     try {
@@ -100,6 +115,20 @@ router.delete('/:id', async (req: Request<{ id: string }>, res: Response) => {
     }
 });
 
+/**
+ * @openapi
+ * /recipes/search:
+ *   get:
+ *     summary: Search recipes
+ *     parameters:
+ *       - in: query
+ *         name: query
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Search results
+ */
 router.get('/search', async (req: Request, res: Response) => {
     const { query } = req.query as { query?: string; };
     try {
@@ -116,6 +145,30 @@ router.get('/search', async (req: Request, res: Response) => {
 
 
 // Route to set image by recipeId and URL
+/**
+ * @openapi
+ * /recipes/{recipeId}/image/url:
+ *   post:
+ *     summary: Set recipe image from a URL
+ *     parameters:
+ *       - in: path
+ *         name: recipeId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               url:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Updated recipe
+ */
 router.post('/:recipeId/image/url', async (req: Request<{ recipeId: string }>, res: Response) => {
     try {
         const { recipeId } = req.params;
@@ -139,6 +192,31 @@ router.post('/:recipeId/image/url', async (req: Request<{ recipeId: string }>, r
 });
 
 // Route to set image by recipeId and file upload
+/**
+ * @openapi
+ * /recipes/{recipeId}/image/upload:
+ *   post:
+ *     summary: Upload an image file for a recipe
+ *     parameters:
+ *       - in: path
+ *         name: recipeId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               image:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         description: Updated recipe
+ */
 router.post('/:recipeId/image/upload', upload.single('image'), async (req: Request<{ recipeId: string }>, res: Response) => {
     try {
         const { recipeId } = req.params;
@@ -161,6 +239,25 @@ router.post('/:recipeId/image/upload', upload.single('image'), async (req: Reque
     }
 });
 
+/**
+ * @openapi
+ * /recipes/{recipeId}/image:
+ *   get:
+ *     summary: Get recipe image
+ *     parameters:
+ *       - in: path
+ *         name: recipeId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         content:
+ *           image/jpeg:
+ *             schema:
+ *               type: string
+ *               format: binary
+ */
 router.get('/:recipeId/image', async (req: Request<{ recipeId: string }>, res: Response) => {
     try {
         const { recipeId } = req.params;

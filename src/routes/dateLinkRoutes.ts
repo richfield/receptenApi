@@ -4,6 +4,27 @@ import { linkRecipeToDate, unlinkRecipeFromDate, getDatesWithRecipes, generateIc
 const router = express.Router();
 
 // Link a recipe to a date
+/**
+ * @openapi
+ * /calendar/link:
+ *   post:
+ *     summary: Link a recipe to a date
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               date:
+ *                 type: string
+ *                 format: date
+ *               recipeId:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Linked resource
+ */
 router.post('/link', async (req: Request, res: Response) => {
     const { date, recipeId } = req.body;
 
@@ -20,6 +41,27 @@ router.post('/link', async (req: Request, res: Response) => {
 });
 
 // Unlink a recipe from a date
+/**
+ * @openapi
+ * /calendar/link:
+ *   delete:
+ *     summary: Unlink a recipe from a date
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               date:
+ *                 type: string
+ *                 format: date
+ *               recipeId:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Unlinked resource
+ */
 router.delete('/link', async (req: Request, res: Response) => {
     const { date, recipeId } = req.body;
 
@@ -35,6 +77,25 @@ router.delete('/link', async (req: Request, res: Response) => {
     }
 });
 
+/**
+ * @openapi
+ * /calendar/today:
+ *   post:
+ *     summary: Get first recipe for a given date
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               date:
+ *                 type: string
+ *                 format: date
+ *     responses:
+ *       200:
+ *         description: Recipe for the date
+ */
 router.post('/today', async (req: Request, res: Response) => {
     try {
         const { date } = req.body;
@@ -50,6 +111,15 @@ router.post('/today', async (req: Request, res: Response) => {
 });
 
 // Get a list of dates with their recipes
+/**
+ * @openapi
+ * /calendar/dates-with-recipes:
+ *   get:
+ *     summary: Get list of dates with recipes
+ *     responses:
+ *       200:
+ *         description: List of dates with recipes
+ */
 router.get('/dates-with-recipes', async (_req: Request, res: Response) => {
     try {
         const datesWithRecipes = await getDatesWithRecipes();
@@ -64,6 +134,19 @@ router.get('/dates-with-recipes', async (_req: Request, res: Response) => {
 });
 
 // iCal endpoint
+/**
+ * @openapi
+ * /calendar/ical:
+ *   get:
+ *     summary: Get iCal file for recipes
+ *     responses:
+ *       200:
+ *         description: iCal data (text/calendar)
+ *         content:
+ *           text/calendar:
+ *             schema:
+ *               type: string
+ */
 router.get('/ical', async (_req: Request, res: Response) => {
     try {
         const icalData = await generateIcal();

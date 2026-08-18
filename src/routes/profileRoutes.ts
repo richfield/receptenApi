@@ -69,6 +69,15 @@ router.post('/me', async (req: Request, res: Response) => {
 });
 
 // Route to get all roles
+/**
+ * @openapi
+ * /profile/roles:
+ *   get:
+ *     summary: Get all roles
+ *     responses:
+ *       200:
+ *         description: Array of roles
+ */
 router.get('/roles', async (req: AuthenticatedRequest, res: Response) => {
     try {
         const roles = await userProfileService.getAllRoles();
@@ -83,6 +92,15 @@ router.get('/roles', async (req: AuthenticatedRequest, res: Response) => {
 });
 
 // Route to get all groups
+/**
+ * @openapi
+ * /profile/groups:
+ *   get:
+ *     summary: Get all groups
+ *     responses:
+ *       200:
+ *         description: Array of groups
+ */
 router.get('/groups', async (req: AuthenticatedRequest, res: Response) => {
     try {
         const groups = await userProfileService.getAllGroups();

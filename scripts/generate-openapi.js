@@ -12,6 +12,7 @@ const options = {
 };
 
 const openapiSpec = swaggerJSDoc(options);
+console.log('Parsed paths:', Object.keys(openapiSpec.paths || {}));
 
 const outPath = path.join(process.cwd(), 'openapi.json');
 fs.writeFileSync(outPath, JSON.stringify(openapiSpec, null, 2));

@@ -11,6 +11,9 @@ import { Response, NextFunction } from 'express';
 import { AuthenticatedRequest } from './Types';
 import profileRoutes from './routes/profileRoutes';
 import dateLinkRoutes from './routes/dateLinkRoutes';
+import path from 'path';
+import fs from 'fs';
+import swaggerUi from 'swagger-ui-express';
 
 
 const app = express();
@@ -75,6 +78,13 @@ app.use('/recipes', recipeRoutes);
 app.use('/scrape', scrapeRoutes);
 app.use('/profile', profileRoutes);
 app.use('/calendar', dateLinkRoutes)
+
+// Serve API docs using swagger-ui-express if openapi.json exists
+const openapiPath = path.join(process.cwd(), 'openapi.json');
+if (fs.existsSync(openapiPath)) {
+    const openapi = JSON.parse(fs.readFileSync(openapiPath, 'utf8'));
+    app.use('/docs', swaggerUi.serve, swaggerUi.setup(openapi));
+}
 
 app.listen(port, () => {
     console.log(`Server is running at http://localhost:${port}`);

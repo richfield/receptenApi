@@ -53,6 +53,43 @@ module.exports = {
         responses: { '200': { description: 'Saved result' } }
       }
     },
+    '/recipes/{id}': {
+      delete: {
+        summary: 'Delete a recipe by id',
+        parameters: [ { name: 'id', in: 'path', required: true, schema: { type: 'string' } } ],
+        responses: { '200': { description: 'Deletion result' } }
+      }
+    },
+    '/recipes/search': {
+      get: {
+        summary: 'Search recipes',
+        parameters: [ { name: 'query', in: 'query', schema: { type: 'string' } } ],
+        responses: { '200': { description: 'Search results' } }
+      }
+    },
+    '/recipes/{recipeId}/image/url': {
+      post: {
+        summary: 'Set recipe image from a URL',
+        parameters: [ { name: 'recipeId', in: 'path', required: true, schema: { type: 'string' } } ],
+        requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', properties: { url: { type: 'string' } } } } } },
+        responses: { '200': { description: 'Updated recipe' } }
+      }
+    },
+    '/recipes/{recipeId}/image/upload': {
+      post: {
+        summary: 'Upload an image file for a recipe',
+        parameters: [ { name: 'recipeId', in: 'path', required: true, schema: { type: 'string' } } ],
+        requestBody: { required: true, content: { 'multipart/form-data': { schema: { type: 'object', properties: { image: { type: 'string', format: 'binary' } } } } } },
+        responses: { '200': { description: 'Updated recipe' } }
+      }
+    },
+    '/recipes/{recipeId}/image': {
+      get: {
+        summary: 'Get recipe image',
+        parameters: [ { name: 'recipeId', in: 'path', required: true, schema: { type: 'string' } } ],
+        responses: { '200': { content: { 'image/jpeg': { schema: { type: 'string', format: 'binary' } } } } }
+      }
+    },
     '/profile/me': {
       get: {
         summary: "Get the authenticated user's profile",
@@ -62,6 +99,56 @@ module.exports = {
         summary: "Update the authenticated user's profile",
         requestBody: { required: true, content: { 'application/json': { schema: { $ref: '#/components/schemas/UserProfile' } } } },
         responses: { '200': { description: 'Updated profile' } }
+      }
+    },
+    '/profile/roles': {
+      get: {
+        summary: 'Get all roles',
+        responses: { '200': { description: 'Array of roles' } }
+      }
+    },
+    '/profile/groups': {
+      get: {
+        summary: 'Get all groups',
+        responses: { '200': { description: 'Array of groups' } }
+      }
+    },
+    '/scrape': {
+      get: {
+        summary: 'Scrape a URL to extract recipe data',
+        parameters: [ { name: 'url', in: 'query', required: true, schema: { type: 'string' } } ],
+        responses: { '200': { description: 'Parsed and saved recipe' } }
+      }
+    },
+    '/calendar/link': {
+      post: {
+        summary: 'Link a recipe to a date',
+        requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', properties: { date: { type: 'string', format: 'date' }, recipeId: { type: 'string' } } } } } },
+        responses: { '201': { description: 'Linked resource' } }
+      },
+      delete: {
+        summary: 'Unlink a recipe from a date',
+        requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', properties: { date: { type: 'string', format: 'date' }, recipeId: { type: 'string' } } } } } },
+        responses: { '200': { description: 'Unlinked resource' } }
+      }
+    },
+    '/calendar/today': {
+      post: {
+        summary: 'Get first recipe for a given date',
+        requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', properties: { date: { type: 'string', format: 'date' } } } } } },
+        responses: { '200': { description: 'Recipe for the date' } }
+      }
+    },
+    '/calendar/dates-with-recipes': {
+      get: {
+        summary: 'Get list of dates with recipes',
+        responses: { '200': { description: 'List of dates with recipes' } }
+      }
+    },
+    '/calendar/ical': {
+      get: {
+        summary: 'Get iCal file for recipes',
+        responses: { '200': { description: 'iCal data (text/calendar)', content: { 'text/calendar': { schema: { type: 'string' } } } } }
       }
     }
   }
