@@ -1,7 +1,7 @@
 import { DateLinkModel } from '../models/DateLink';
 import RecipeModel from '../models/Recipe';
 import { DatesResponse } from '../Types';
-import moment from 'moment';
+import moment from 'moment-timezone';
 
 export const linkRecipeToDate = async (date: Date, recipeId: string) => {
     const recipe = await RecipeModel.findById(recipeId);
@@ -133,16 +133,12 @@ export const generateIcal = async () => {
         .replace(/[-:.]/g, '')
         .slice(0, 15) + 'Z';
 
+    const tz = 'Europe/Amsterdam';
     const events = dateLinks.flatMap((link) => {
-        // Convert MongoDB UTC timestamp → local date (no artificial offset)
-        // Use the DB date as the event's local date; JavaScript Date/toLocaleDateString will reflect server locale
-        const dbDate = new Date(link._id);
-        const localDate = new Date(dbDate);
-        const startStr = toLocalDateString(localDate);
-
-        const next = new Date(localDate);
-        next.setDate(localDate.getDate() + 1);
-        const endStr = toLocalDateString(next);
+        // Use the DB UTC timestamp and convert into the target timezone for all-day DTSTART/DTEND
+        const mLocal = moment.tz(link._id as string | Date, tz);
+        const startStr = mLocal.format('YYYYMMDD');
+        const endStr = mLocal.clone().add(1, 'day').format('YYYYMMDD');
 
         return link.recipes.map((recipe) => {
             const recipeUrl = `https://recepten.ten-velde.com/recipe/${recipe._id}`;
