@@ -10,8 +10,8 @@ export const addLeftover = async (recipeId: string, addedBy?: string, portion?: 
   return leftover;
 };
 
-export const listLeftovers = async (opts?: { recipeId?: string; status?: 'inFreezer' | 'claimed' | 'all'; date?: string }) => {
-  const { recipeId, status = 'inFreezer', date } = opts || {};
+export const listLeftovers = async (opts?: { recipeId?: string; status?: 'inFreezer' | 'claimed' | 'all'; start?: string; end?: string }) => {
+  const { recipeId, status = 'inFreezer', start, end } = opts || {};
   const filter: any = {};
   if (recipeId) filter.recipe = recipeId;
 
@@ -19,12 +19,10 @@ export const listLeftovers = async (opts?: { recipeId?: string; status?: 'inFree
     filter.inFreezer = true;
   } else if (status === 'claimed') {
     filter.inFreezer = false;
-    if (date) {
-      const start = new Date(date);
-      start.setHours(0, 0, 0, 0);
-      const end = new Date(date);
-      end.setHours(23, 59, 59, 999);
-      filter.claimedAt = { $gte: start, $lte: end };
+    if (start || end) {
+      const s = start ? new Date(start) : new Date(0);
+      const e = end ? new Date(end) : new Date();
+      filter.claimedAt = { $gte: s, $lte: e };
     }
   }
 

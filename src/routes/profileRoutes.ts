@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 import * as userProfileService from '../services/userProfileService';
 import { AuthenticatedRequest } from '../Types';
+import admin from 'firebase-admin';
 
 const router = express.Router();
 
@@ -111,6 +112,24 @@ router.get('/groups', async (req: AuthenticatedRequest, res: Response) => {
         if (error instanceof Error) {
             res.status(500).json({ error: error.message });
         }
+    }
+});
+
+
+// Batch lookup of user profiles by Firebase UID — returns array of { uid, displayName, email }
+router.get('/batch', async (req: Request, res: Response) => {
+    try {
+        const uidsParam = (req.query.uids as string) || '';
+        const uids = uidsParam.split(',').map(s => s.trim()).filter(Boolean);
+        if (uids.length === 0) return res.json([]);
+
+        // Use firebase-admin to batch fetch user records
+        const users = await admin.auth().getUsers(uids.map(u => ({ uid: u })));
+        const mapped = users.users.map(u => ({ uid: u.uid, displayName: u.displayName || u.email || u.uid, email: u.email }));
+        res.json(mapped);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' });
     }
 });
 
