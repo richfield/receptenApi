@@ -1,6 +1,7 @@
 import { DateLinkModel } from '../models/DateLink';
 import RecipeModel from '../models/Recipe';
 import { DatesResponse } from '../Types';
+import moment from 'moment';
 
 export const linkRecipeToDate = async (date: Date, recipeId: string) => {
     const recipe = await RecipeModel.findById(recipeId);
@@ -28,9 +29,11 @@ export const unlinkRecipeFromDate = async (date: Date, recipeId: string) => {
     return dateLink;
 };
 
-export const getFirstRecipeForToday = async (date: Date): Promise<string | null> => {
-    const start = new Date(date.setHours(0, 0, 0, 0));
-    const end = new Date(date.setHours(23, 59, 59, 999));
+// Accepts a Date or ISO date string and computes UTC start/end boundaries to query links consistently in UTC
+export const getFirstRecipeForToday = async (dateInput: Date | string): Promise<string | null> => {
+    const m = moment.utc(dateInput);
+    const start = m.clone().startOf('day').toDate();
+    const end = m.clone().endOf('day').toDate();
 
     const link = await DateLinkModel
         .findOne({ date: { $gte: start, $lte: end } })

@@ -1,5 +1,6 @@
 import LeftoverModel from '../models/Leftover';
 import RecipeModel from '../models/Recipe';
+import moment from 'moment';
 
 export const addLeftover = async (recipeId: string, addedBy?: string, portion?: string) => {
   const recipe = await RecipeModel.findById(recipeId);
@@ -20,8 +21,9 @@ export const listLeftovers = async (opts?: { recipeId?: string; status?: 'inFree
   } else if (status === 'claimed') {
     filter.inFreezer = false;
     if (start || end) {
-      const s = start ? new Date(start) : new Date(0);
-      const e = end ? new Date(end) : new Date();
+      // parse as UTC to avoid timezone shifts
+      const s = start ? moment.utc(start).toDate() : new Date(0);
+      const e = end ? moment.utc(end).toDate() : new Date();
       filter.claimedAt = { $gte: s, $lte: e };
     }
   }
