@@ -81,6 +81,8 @@ app.use('/calendar', dateLinkRoutes)
 
 import leftoverRoutes from './routes/leftoverRoutes';
 app.use('/leftovers', leftoverRoutes);
+// Also accept requests that include an /api prefix (matches the nginx proxy which may or may not strip /api)
+app.use('/api/leftovers', leftoverRoutes);
 
 // Serve API docs using swagger-ui-express if openapi.json exists
 const openapiPath = path.join(process.cwd(), 'openapi.json');
