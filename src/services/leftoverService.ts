@@ -10,8 +10,10 @@ export const addLeftover = async (recipeId: string, addedBy?: string, portion?: 
   return leftover;
 };
 
-export const listFreezerLeftovers = async () => {
-  return LeftoverModel.find({ inFreezer: true }).populate('recipe').exec();
+export const listFreezerLeftovers = async (recipeId?: string) => {
+  const filter: any = { inFreezer: true };
+  if (recipeId) filter.recipe = recipeId;
+  return LeftoverModel.find(filter).populate('recipe').exec();
 };
 
 export const claimLeftover = async (leftoverId: string, userId: string) => {
