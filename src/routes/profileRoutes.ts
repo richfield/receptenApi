@@ -125,7 +125,7 @@ router.get('/batch', async (req: Request, res: Response) => {
 
         // Use firebase-admin to batch fetch user records
         const users = await admin.auth().getUsers(uids.map(u => ({ uid: u })));
-        const mapped = users.users.map(u => ({ uid: u.uid, displayName: u.displayName || u.email || u.uid, email: u.email }));
+        const mapped = users.users.map(u => ({ uid: u.uid, displayName: u.displayName || u.email || u.uid, email: u.email, photoURL: u.photoURL }));
         res.json(mapped);
     } catch (error) {
         console.error(error);
