@@ -150,6 +150,24 @@ module.exports = {
         summary: 'Get iCal file for recipes',
         responses: { '200': { description: 'iCal data (text/calendar)', content: { 'text/calendar': { schema: { type: 'string' } } } } }
       }
+    },
+    '/leftovers': {
+      get: {
+        summary: 'List leftovers in the freezer',
+        responses: { '200': { description: 'Array of leftovers' } }
+      },
+      post: {
+        summary: 'Add a leftover portion',
+        requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', properties: { recipeId: { type: 'string' }, portion: { type: 'string' } } } } } },
+        responses: { '201': { description: 'Leftover added' } }
+      }
+    },
+    '/leftovers/{id}/claim': {
+      post: {
+        summary: 'Claim a leftover',
+        parameters: [ { name: 'id', in: 'path', required: true, schema: { type: 'string' } } ],
+        responses: { '200': { description: 'Claimed leftover' } }
+      }
     }
   }
 };

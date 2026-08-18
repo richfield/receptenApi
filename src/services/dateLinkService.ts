@@ -38,7 +38,15 @@ export const getFirstRecipeForToday = async (date: Date): Promise<string | null>
         .populate('recipe')
         .exec();
 
-    return link && link.recipe ? (link.recipe._id.toString()) : null;
+    if (!link || !link.recipe) return null;
+
+    // Special-case: if the linked recipe's name is "Leftovers" then signal 'leftovers'
+    const recipe = link.recipe as any;
+    if (recipe.name && typeof recipe.name === 'string' && recipe.name.trim().toLowerCase() === 'leftovers') {
+        return 'leftovers';
+    }
+
+    return recipe._id.toString();
 };
 
 // Service to get all dates with their linked recipes

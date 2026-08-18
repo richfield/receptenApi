@@ -79,6 +79,9 @@ app.use('/scrape', scrapeRoutes);
 app.use('/profile', profileRoutes);
 app.use('/calendar', dateLinkRoutes)
 
+import leftoverRoutes from './routes/leftoverRoutes';
+app.use('/leftovers', leftoverRoutes);
+
 // Serve API docs using swagger-ui-express if openapi.json exists
 const openapiPath = path.join(process.cwd(), 'openapi.json');
 if (fs.existsSync(openapiPath)) {
