@@ -1,5 +1,7 @@
 import express, { Request, Response } from 'express';
 import * as leftoverService from '../services/leftoverService';
+import * as userProfileService from '../services/userProfileService';
+import { RoleModel } from '../models/Role';
 import { AuthenticatedRequest } from '../Types';
 
 const router = express.Router();
@@ -99,6 +101,51 @@ router.post('/:id/unclaim', async (req: Request<{ id: string }>, res: Response) 
       res.json(updated);
     } catch (e) {
       return res.status(403).json({ error: e instanceof Error ? e.message : 'Forbidden' });
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({ error: err instanceof Error ? err.message : 'Unknown error' });
+  }
+});
+
+
+// Allow admins to remove a leftover
+router.delete('/:id', async (req: Request<{ id: string }>, res: Response) => {
+  try {
+    const userId = (req as AuthenticatedRequest).user?.uid;
+    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+
+    // Fetch the user's profile and determine admin membership
+    try {
+      const profile = await userProfileService.getUserProfile(userId);
+      let isAdmin = false;
+      if (profile && profile.roles) {
+        for (const r of profile.roles as any[]) {
+          if (!r) continue;
+          if (typeof r === 'string') {
+            if (r.toLowerCase && r.toLowerCase() === 'admin') { isAdmin = true; break; }
+            // Attempt to resolve role by id
+            try {
+              const roleDoc = await RoleModel.findById(r);
+              if (roleDoc && roleDoc.name === 'admin') { isAdmin = true; break; }
+            } catch (e) {
+              // ignore
+            }
+          } else if (r.name && r.name === 'admin') {
+            isAdmin = true; break;
+          } else if (r._id && String(r._id) && String(r._id) === String((await RoleModel.findOne({ name: 'admin' }))?._id)) {
+            isAdmin = true; break;
+          }
+        }
+      }
+
+      if (!isAdmin) return res.status(403).json({ error: 'Forbidden' });
+
+      const deleted = await leftoverService.deleteLeftover(req.params.id);
+      res.json({ deletedId: req.params.id });
+    } catch (e) {
+      console.error(e);
+      res.status(500).json({ error: e instanceof Error ? e.message : 'Unknown error' });
     }
   } catch (err) {
     console.error(err);

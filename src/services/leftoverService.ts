@@ -58,3 +58,11 @@ export const unclaimLeftover = async (leftoverId: string, userId: string) => {
 export const getLeftoverById = async (id: string) => {
   return LeftoverModel.findById(id).populate('recipe').exec();
 };
+
+export const deleteLeftover = async (leftoverId: string) => {
+  // Delete the leftover document
+  const found = await LeftoverModel.findById(leftoverId).exec();
+  if (!found) throw new Error('Leftover not found');
+  await LeftoverModel.deleteOne({ _id: leftoverId }).exec();
+  return found;
+};
