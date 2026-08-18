@@ -53,8 +53,8 @@ router.get('/', async (req: Request, res: Response) => {
     const uid = (req as AuthenticatedRequest).user?.uid;
     if (!uid) return res.status(401).json({ error: 'Unauthorized' });
 
-    const { recipeId } = req.query as { recipeId?: string };
-    const list = await leftoverService.listFreezerLeftovers(recipeId);
+    const { recipeId, status, date } = req.query as { recipeId?: string; status?: string; date?: string };
+    const list = await leftoverService.listLeftovers({ recipeId, status: status as any, date });
     res.json(list);
   } catch (err) {
     console.error(err);
