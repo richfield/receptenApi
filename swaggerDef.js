@@ -16,7 +16,8 @@ module.exports = {
         properties: {
           name: { type: 'string' },
           description: { type: 'string' },
-          images: { type: 'array', items: { type: 'string' } }
+          images: { type: 'array', items: { type: 'string' } },
+          isLeftover: { type: 'boolean' }
         }
       },
       UserProfile: {

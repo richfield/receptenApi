@@ -70,6 +70,7 @@ const RecipeSchema = new Schema<RecipeData>({
         }
     },
     description: { type: String },
+    isLeftover: { type: Boolean, default: false },
     recipeCategory: { type: [String], default: [] },
     recipeCuisine: { type: [String], default: [] },
     aggregateRating: {

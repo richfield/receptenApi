@@ -27,6 +27,9 @@
             "items": {
               "type": "string"
             }
+          },
+          "isLeftover": {
+            "type": "boolean"
           }
         }
       },

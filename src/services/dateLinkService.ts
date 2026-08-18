@@ -40,9 +40,9 @@ export const getFirstRecipeForToday = async (date: Date): Promise<string | null>
 
     if (!link || !link.recipe) return null;
 
-    // Special-case: if the linked recipe's name is "Leftovers" then signal 'leftovers'
+    // Special-case: if the linked recipe has the isLeftover flag set then signal 'leftovers'
     const recipe = link.recipe as any;
-    if (recipe.name && typeof recipe.name === 'string' && recipe.name.trim().toLowerCase() === 'leftovers') {
+    if (recipe.isLeftover) {
         return 'leftovers';
     }
 

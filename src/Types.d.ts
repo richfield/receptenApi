@@ -46,6 +46,7 @@ export type RecipeData = {
     recipeCuisine?: string | string[];
     aggregateRating?: string; // Optional field
     video?: string | VideoObject; // Optional field
+    isLeftover?: boolean;
     _id?: string;
 };
 
