@@ -26,8 +26,11 @@ const router = express.Router();
  */
 router.post('/', async (req: Request, res: Response) => {
   try {
+    const uid = (req as AuthenticatedRequest).user?.uid;
+    if (!uid) return res.status(401).json({ error: 'Unauthorized' });
+
     const { recipeId, portion } = req.body;
-    const addedBy = (req as AuthenticatedRequest).user?.uid;
+    const addedBy = uid;
     const leftover = await leftoverService.addLeftover(recipeId, addedBy, portion);
     res.status(201).json(leftover);
   } catch (err) {
@@ -45,8 +48,11 @@ router.post('/', async (req: Request, res: Response) => {
  *       200:
  *         description: Array of leftovers
  */
-router.get('/', async (_req: Request, res: Response) => {
+router.get('/', async (req: Request, res: Response) => {
   try {
+    const uid = (req as AuthenticatedRequest).user?.uid;
+    if (!uid) return res.status(401).json({ error: 'Unauthorized' });
+
     const list = await leftoverService.listFreezerLeftovers();
     res.json(list);
   } catch (err) {
