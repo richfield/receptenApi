@@ -11,21 +11,27 @@ export const addLeftover = async (recipeId: string, addedBy?: string, portion?: 
   return leftover;
 };
 
-export const listLeftovers = async (opts?: { recipeId?: string; status?: 'inFreezer' | 'claimed' | 'all'; start?: string; end?: string }) => {
+export const listLeftovers = async (opts?: { recipeId?: string; status?: 'inFreezer' | 'claimed' | 'all' | 'allFuture'; start?: string; end?: string }) => {
   const { recipeId, status = 'inFreezer', start, end } = opts || {};
   const filter: any = {};
   if (recipeId) filter.recipe = recipeId;
 
-  if (status === 'inFreezer') {
-    filter.inFreezer = true;
-  } else if (status === 'claimed') {
-    filter.inFreezer = false;
-    if (start || end) {
+  switch (status) {
+    case 'allFuture':
+      filter.claimedAt = { $gte: moment.utc().startOf('day').toDate() };
+      break;
+    case 'inFreezer':
+      filter.inFreezer = true;
+      break;
+     case 'claimed':
+      filter.inFreezer = false;
+      if (start || end) {
       // parse as UTC to avoid timezone shifts
       const s = start ? moment.utc(start).toDate() : new Date(0);
       const e = end ? moment.utc(end).toDate() : new Date();
       filter.claimedAt = { $gte: s, $lte: e };
     }
+      break; 
   }
 
   return LeftoverModel.find(filter).populate('recipe').exec();
