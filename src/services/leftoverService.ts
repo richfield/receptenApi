@@ -18,11 +18,12 @@ export const listLeftovers = async (opts?: { recipeId?: string; status?: 'inFree
 
   switch (status) {
     case 'allFuture':
+      const today = moment.utc().startOf('day').toDate(); // Convert to Date
       filter.$or = [
-        { isClaimed: { $ne: true } }, // Documents without `isClaimed` or where it's not `true`
+        { isClaimed: { $ne: true } }, // Not claimed (or missing)
         {
           isClaimed: true,
-          claimedAt: { $gte: moment.utc().startOf('day').toDate() } // `claimedAt` is today or later
+          claimedAt: { $gte: today } // claimedAt >= today (UTC)
         }
       ];
       break;
