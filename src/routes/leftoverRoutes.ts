@@ -81,6 +81,8 @@ router.get('/', async (req: Request, res: Response) => {
  */
 router.post('/:id/claim', async (req: Request<{ id: string }>, res: Response) => {
   try {
+    const { day } = req.body;
+    console.log(`Claiming leftover ${req.params.id} for user ${(req as AuthenticatedRequest).user?.uid} on day ${day}`);
     const userId = (req as AuthenticatedRequest).user?.uid;
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
     const claimed = await leftoverService.claimLeftover(req.params.id, userId);
