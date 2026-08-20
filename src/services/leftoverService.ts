@@ -22,7 +22,7 @@ export const listLeftovers = async (opts?: { recipeId?: string; status?: 'inFree
       filter.$or = [
         { isClaimed: { $ne: true } }, // Not claimed (or missing)
         {
-          isClaimed: true,
+          claimedBy: { $exists: true, $ne: null },
           claimedAt: { $gte: today } // claimedAt >= today (UTC)
         }
       ];
