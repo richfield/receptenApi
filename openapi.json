@@ -425,7 +425,7 @@
     },
     "/leftovers": {
       "get": {
-        "summary": "List leftovers in the freezer",
+        "summary": "List leftovers currently in the freezer",
         "responses": {
           "200": {
             "description": "Array of leftovers"
@@ -433,7 +433,7 @@
         }
       },
       "post": {
-        "summary": "Add a leftover portion",
+        "summary": "Add a leftover portion to the freezer",
         "requestBody": {
           "required": true,
           "content": {
@@ -461,7 +461,7 @@
     },
     "/leftovers/{id}/claim": {
       "post": {
-        "summary": "Claim a leftover",
+        "summary": "Claim a leftover (removes it from the freezer)",
         "parameters": [
           {
             "name": "id",
