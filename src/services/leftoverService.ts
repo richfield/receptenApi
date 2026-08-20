@@ -31,11 +31,11 @@ export const listLeftovers = async (opts?: { recipeId?: string; status?: 'inFree
   return LeftoverModel.find(filter).populate('recipe').exec();
 };
 
-export const claimLeftover = async (leftoverId: string, userId: string) => {
+export const claimLeftover = async (leftoverId: string, userId: string, day: any) => {
   // Atomically claim a leftover that is still in the freezer
   const updated = await LeftoverModel.findOneAndUpdate(
     { _id: leftoverId, inFreezer: true },
-    { $set: { inFreezer: false, claimedBy: userId, claimedAt: new Date() } },
+    { $set: { inFreezer: false, claimedBy: userId, claimedAt: day } },
     { new: true }
   ).populate('recipe').exec();
 
