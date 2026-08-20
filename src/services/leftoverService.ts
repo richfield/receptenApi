@@ -18,22 +18,31 @@ export const listLeftovers = async (opts?: { recipeId?: string; status?: 'inFree
 
   switch (status) {
     case 'allFuture':
-      filter.claimedAt = { $gte: moment.utc().startOf('day').toDate() };
+      // Filter for:
+      // 1. Documents without `isClaimed` or where `isClaimed` is not `true`
+      // 2. Documents with `isClaimed: true` and `claimedAt >= today (UTC)`
+      filter.$or = [
+        { isClaimed: { $ne: true } }, // Covers missing, false, null, undefined
+        {
+          isClaimed: true,
+          claimedAt: { $gte: moment.utc().startOf('day').toDate() }
+        }
+      ];
       break;
     case 'inFreezer':
       filter.inFreezer = true;
       break;
-     case 'claimed':
+    case 'claimed':
       filter.inFreezer = false;
       if (start || end) {
-      // parse as UTC to avoid timezone shifts
-      const s = start ? moment.utc(start).toDate() : new Date(0);
-      const e = end ? moment.utc(end).toDate() : new Date();
-      filter.claimedAt = { $gte: s, $lte: e };
-    }
-      break; 
+        // parse as UTC to avoid timezone shifts
+        const s = start ? moment.utc(start).toDate() : new Date(0);
+        const e = end ? moment.utc(end).toDate() : new Date();
+        filter.claimedAt = { $gte: s, $lte: e };
+      }
+      break;
   }
-  
+
   console.log('listLeftovers filter:', filter, status, start, end);
   return LeftoverModel.find(filter).populate('recipe').exec();
 };
