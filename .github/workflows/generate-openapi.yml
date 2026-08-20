@@ -4,27 +4,33 @@ on:
   push:
     branches: [ main ]
 
+permissions:
+  contents: write  # 👈 Required for pushing commits
+
 jobs:
   generate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 0  # Needed for git history
+
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
+
       - name: Install dependencies
         run: npm ci
+
       - name: Generate OpenAPI
         run: npm run generate:openapi
+
       - name: Commit and push openapi.json if changed
         uses: EndBug/add-and-commit@v9
         with:
-          message: 'chore: regenerate openapi.json [ci]' 
+          message: 'chore: regenerate openapi.json [ci]'
           add: 'openapi.json'
           author_name: 'github-actions'
           author_email: 'actions@github.com'
-          signoff: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # ✅ Removed `signoff` (invalid parameter)
+          # ✅ No need to manually pass GITHUB_TOKEN (it's auto-injected)
