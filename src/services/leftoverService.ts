@@ -41,7 +41,7 @@ export const listLeftovers = async (opts?: { recipeId?: string; status?: 'inFree
       break;
   }
 
-  console.log('listLeftovers filter:', filter, status, start, end);
+  console.log('listLeftovers filter:', JSON.stringify(filter), status, start, end);
   return LeftoverModel.find(filter).populate('recipe').exec();
 };
 
