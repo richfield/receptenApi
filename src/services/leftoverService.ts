@@ -20,7 +20,7 @@ export const listLeftovers = async (opts?: { recipeId?: string; status?: 'inFree
     case 'allFuture':
       const today = moment.utc().startOf('day').toDate(); // Convert to Date
       filter.$or = [
-        { isClaimed: { $ne: true } }, // Not claimed (or missing)
+        { isClaimed: { $ne: true }, claimedBy: { $eq: null } }, // Not claimed (or missing)
         {
           claimedBy: { $exists: true, $ne: null },
           claimedAt: { $gte: today } // claimedAt >= today (UTC)
