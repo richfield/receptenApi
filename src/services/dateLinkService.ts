@@ -3,24 +3,63 @@ import RecipeModel from '../models/Recipe';
 import { DatesResponse } from '../Types';
 import moment from 'moment-timezone';
 
-const normalizeDateForLink = (date: Date): Date => {
-    const normalized = new Date(date);
-    normalized.setHours(0, 0, 0, 0);
-    return normalized;
+const getUtcDayRange = (date: Date) => {
+    const start = moment.utc(date).startOf('day').toDate();
+    const end = moment.utc(date).endOf('day').toDate();
+    return { start, end };
+};
+
+const hasNonMidnightTime = (date: Date): boolean => {
+    const m = moment.utc(date);
+    return m.hours() !== 0 || m.minutes() !== 0 || m.seconds() !== 0 || m.milliseconds() !== 0;
+};
+
+export const cleanupInvalidDateLinks = async () => {
+    const allLinks = await DateLinkModel.find({}).lean();
+    let normalizedCount = 0;
+    let removedDuplicates = 0;
+
+    for (const link of allLinks) {
+        const currentDate = link.date instanceof Date ? link.date : new Date(link.date);
+        if (!hasNonMidnightTime(currentDate)) {
+            continue;
+        }
+
+        const normalizedDate = moment.utc(currentDate).startOf('day').toDate();
+        const duplicate = await DateLinkModel.findOne({
+            recipe: link.recipe,
+            date: normalizedDate,
+            _id: { $ne: link._id }
+        }).lean();
+
+        if (duplicate) {
+            await DateLinkModel.deleteOne({ _id: link._id });
+            removedDuplicates += 1;
+            continue;
+        }
+
+        await DateLinkModel.updateOne({ _id: link._id }, { $set: { date: normalizedDate } });
+        normalizedCount += 1;
+    }
+
+    return { normalizedCount, removedDuplicates };
 };
 
 export const linkRecipeToDate = async (date: Date, recipeId: string) => {
     const recipe = await RecipeModel.findById(recipeId);
     if (!recipe) throw new Error('Recipe not found');
 
-    const normalizedDate = normalizeDateForLink(date);
+    const { start, end } = getUtcDayRange(date);
 
-    // Check if the link already exists
-    const existingLink = await DateLinkModel.findOne({ date: normalizedDate, recipe: recipeId });
+    // Check if the link already exists in this calendar day, regardless of stored time-of-day
+    const existingLink = await DateLinkModel.findOne({
+        recipe: recipeId,
+        date: { $gte: start, $lt: end }
+    });
     if (existingLink) throw new Error('Recipe already linked to this date');
 
     const dateLink = new DateLinkModel({
-        date: normalizedDate,
+        date: start,
         recipe: recipeId
     });
 
@@ -31,8 +70,11 @@ export const linkRecipeToDate = async (date: Date, recipeId: string) => {
 
 // Service to unlink a recipe from a date
 export const unlinkRecipeFromDate = async (date: Date, recipeId: string) => {
-    const normalizedDate = normalizeDateForLink(date);
-    const dateLink = await DateLinkModel.findOneAndDelete({ date: normalizedDate, recipe: recipeId });
+    const { start, end } = getUtcDayRange(date);
+    const dateLink = await DateLinkModel.findOneAndDelete({
+        recipe: recipeId,
+        date: { $gte: start, $lt: end }
+    });
     if (!dateLink) throw new Error('Recipe not linked to this date');
 
     return dateLink;

@@ -1,5 +1,5 @@
 import express, { Request, Response } from 'express';
-import { linkRecipeToDate, unlinkRecipeFromDate, getDatesWithRecipes, generateIcal, getFirstRecipeForToday } from '../services/dateLinkService';
+import { linkRecipeToDate, unlinkRecipeFromDate, getDatesWithRecipes, generateIcal, getFirstRecipeForToday, cleanupInvalidDateLinks } from '../services/dateLinkService';
 
 const router = express.Router();
 
@@ -73,6 +73,18 @@ router.delete('/link', async (req: Request, res: Response) => {
         console.error({error, req, res})
         if (error instanceof Error) {
             res.status(400).json({ message: error.message });
+        }
+    }
+});
+
+router.post('/cleanup-invalid-links', async (_req: Request, res: Response) => {
+    try {
+        const result = await cleanupInvalidDateLinks();
+        res.status(200).json(result);
+    } catch (error) {
+        console.error({ error });
+        if (error instanceof Error) {
+            res.status(500).json({ message: error.message });
         }
     }
 });
