@@ -94,10 +94,9 @@ export const getFirstRecipeForToday = async (dateInput: Date | string): Promise<
 
     if (!link || !link.recipe) return null;
 
-    // Special-case: if the linked recipe has the isLeftover flag set then signal 'leftovers'
     const recipe = link.recipe as any;
     if (recipe.isLeftover) {
-        return 'leftovers';
+        return `leftovers:${recipe._id.toString()}`;
     }
 
     return recipe._id.toString();
