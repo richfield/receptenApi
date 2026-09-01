@@ -11,6 +11,7 @@ import { Response, NextFunction } from 'express';
 import { AuthenticatedRequest } from './Types';
 import profileRoutes from './routes/profileRoutes';
 import dateLinkRoutes from './routes/dateLinkRoutes';
+import recipeRatingRoutes from './routes/recipeRatingRoutes';
 import path from 'path';
 import fs from 'fs';
 import swaggerUi from 'swagger-ui-express';
@@ -78,6 +79,7 @@ app.use('/recipes', recipeRoutes);
 app.use('/scrape', scrapeRoutes);
 app.use('/profile', profileRoutes);
 app.use('/calendar', dateLinkRoutes)
+app.use('/ratings', recipeRatingRoutes);
 
 import leftoverRoutes from './routes/leftoverRoutes';
 app.use('/leftovers', leftoverRoutes);

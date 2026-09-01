@@ -123,6 +123,20 @@ export type DateLink = {
     recipe: RecipeData; // Assuming RecipeData is already defined as shown before
 };
 
+export type RecipeRatingSummary = {
+    average: number;
+    count: number;
+    total: number;
+};
+
+export type RecipeRatingEntry = {
+    _id?: string;
+    recipe: string;
+    userId: string;
+    value: number;
+    createdAt?: Date;
+    updatedAt?: Date;
+};
 
 export type DatesResponse = {
     _id: Date,
