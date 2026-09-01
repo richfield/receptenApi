@@ -3,16 +3,24 @@ import RecipeModel from '../models/Recipe';
 import { DatesResponse } from '../Types';
 import moment from 'moment-timezone';
 
+const normalizeDateForLink = (date: Date): Date => {
+    const normalized = new Date(date);
+    normalized.setHours(0, 0, 0, 0);
+    return normalized;
+};
+
 export const linkRecipeToDate = async (date: Date, recipeId: string) => {
     const recipe = await RecipeModel.findById(recipeId);
     if (!recipe) throw new Error('Recipe not found');
 
+    const normalizedDate = normalizeDateForLink(date);
+
     // Check if the link already exists
-    const existingLink = await DateLinkModel.findOne({ date, recipe: recipeId });
+    const existingLink = await DateLinkModel.findOne({ date: normalizedDate, recipe: recipeId });
     if (existingLink) throw new Error('Recipe already linked to this date');
 
     const dateLink = new DateLinkModel({
-        date,
+        date: normalizedDate,
         recipe: recipeId
     });
 
@@ -23,7 +31,8 @@ export const linkRecipeToDate = async (date: Date, recipeId: string) => {
 
 // Service to unlink a recipe from a date
 export const unlinkRecipeFromDate = async (date: Date, recipeId: string) => {
-    const dateLink = await DateLinkModel.findOneAndDelete({ date, recipe: recipeId });
+    const normalizedDate = normalizeDateForLink(date);
+    const dateLink = await DateLinkModel.findOneAndDelete({ date: normalizedDate, recipe: recipeId });
     if (!dateLink) throw new Error('Recipe not linked to this date');
 
     return dateLink;
