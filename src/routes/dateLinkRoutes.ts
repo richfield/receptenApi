@@ -111,7 +111,7 @@ router.post('/cleanup-invalid-links', async (_req: Request, res: Response) => {
 router.post('/today', async (req: Request, res: Response) => {
     try {
         const { date } = req.body;
-        const recipe = await getFirstRecipeForToday(new Date(date));
+        const recipe = await getFirstRecipeForToday(date);
         res.status(200).json(recipe);
     } catch (error) {
         // eslint-disable-next-line no-console

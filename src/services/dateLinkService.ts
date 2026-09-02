@@ -80,11 +80,11 @@ export const unlinkRecipeFromDate = async (date: Date, recipeId: string) => {
     return dateLink;
 };
 
-// Compare against the user's local calendar day rather than a UTC-normalized timestamp.
+// Date links are stored at UTC midnight, so preserve date-only values as UTC dates.
 export const getFirstRecipeForToday = async (dateInput: Date | string): Promise<string | null> => {
     const m = typeof dateInput === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dateInput)
-        ? moment(dateInput, 'YYYY-MM-DD')
-        : moment(dateInput);
+        ? moment.utc(dateInput, 'YYYY-MM-DD')
+        : moment.utc(dateInput);
 
     const start = m.clone().startOf('day').toDate();
     const end = m.clone().endOf('day').toDate();
