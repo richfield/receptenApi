@@ -33,7 +33,7 @@ router.post('/link', async (req: Request, res: Response) => {
         res.status(201).json(linked);
     } catch (error) {
         // eslint-disable-next-line no-console
-        console.error({error, req, res})
+        console.error({ error, req, res })
         if (error instanceof Error) {
             res.status(500).json({ message: error.message });
         }
@@ -70,7 +70,7 @@ router.delete('/link', async (req: Request, res: Response) => {
         res.status(200).json(unlinked);
     } catch (error) {
         // eslint-disable-next-line no-console
-        console.error({error, req, res})
+        console.error({ error, req, res })
         if (error instanceof Error) {
             res.status(400).json({ message: error.message });
         }
@@ -115,10 +115,10 @@ router.post('/today', async (req: Request, res: Response) => {
         res.status(200).json(recipe);
     } catch (error) {
         // eslint-disable-next-line no-console
-        console.error({error, req, res})
+        console.error({ error, req, res })
         if (error instanceof Error) {
             res.status(500).json({ message: error.message });
-    }
+        }
     }
 });
 
@@ -138,7 +138,7 @@ router.get('/dates-with-recipes', async (_req: Request, res: Response) => {
         res.status(200).json(datesWithRecipes);
     } catch (error) {
         // eslint-disable-next-line no-console
-        console.error({error, _req, res})
+        console.error({ error, _req, res })
         if (error instanceof Error) {
             res.status(500).json({ message: error.message });
         }
