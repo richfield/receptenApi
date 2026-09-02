@@ -29,7 +29,7 @@ router.post('/link', async (req: Request, res: Response) => {
     const { date, recipeId } = req.body;
 
     try {
-        const linked = await linkRecipeToDate(new Date(date), recipeId);
+        const linked = await linkRecipeToDate(date, recipeId);
         res.status(201).json(linked);
     } catch (error) {
         // eslint-disable-next-line no-console
@@ -66,7 +66,7 @@ router.delete('/link', async (req: Request, res: Response) => {
     const { date, recipeId } = req.body;
 
     try {
-        const unlinked = await unlinkRecipeFromDate(new Date(date), recipeId);
+        const unlinked = await unlinkRecipeFromDate(date, recipeId);
         res.status(200).json(unlinked);
     } catch (error) {
         // eslint-disable-next-line no-console

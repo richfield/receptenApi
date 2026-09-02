@@ -3,9 +3,12 @@ import RecipeModel from '../models/Recipe';
 import { DatesResponse } from '../Types';
 import moment from 'moment-timezone';
 
-const getUtcDayRange = (date: Date) => {
-    const start = moment.utc(date).startOf('day').toDate();
-    const end = moment.utc(date).endOf('day').toDate();
+const getUtcDayRange = (date: Date | string) => {
+    const normalized = typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date)
+        ? moment.utc(date, 'YYYY-MM-DD')
+        : moment.utc(date);
+    const start = normalized.clone().startOf('day').toDate();
+    const end = normalized.clone().endOf('day').toDate();
     return { start, end };
 };
 
@@ -45,7 +48,7 @@ export const cleanupInvalidDateLinks = async () => {
     return { normalizedCount, removedDuplicates };
 };
 
-export const linkRecipeToDate = async (date: Date, recipeId: string) => {
+export const linkRecipeToDate = async (date: Date | string, recipeId: string) => {
     const recipe = await RecipeModel.findById(recipeId);
     if (!recipe) throw new Error('Recipe not found');
 
@@ -69,7 +72,7 @@ export const linkRecipeToDate = async (date: Date, recipeId: string) => {
 
 
 // Service to unlink a recipe from a date
-export const unlinkRecipeFromDate = async (date: Date, recipeId: string) => {
+export const unlinkRecipeFromDate = async (date: Date | string, recipeId: string) => {
     const { start, end } = getUtcDayRange(date);
     const dateLink = await DateLinkModel.findOneAndDelete({
         recipe: recipeId,
