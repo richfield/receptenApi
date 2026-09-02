@@ -80,9 +80,12 @@ export const unlinkRecipeFromDate = async (date: Date, recipeId: string) => {
     return dateLink;
 };
 
-// Accepts a Date or ISO date string and computes UTC start/end boundaries to query links consistently in UTC
+// Compare against the user's local calendar day rather than a UTC-normalized timestamp.
 export const getFirstRecipeForToday = async (dateInput: Date | string): Promise<string | null> => {
-    const m = moment.utc(dateInput);
+    const m = typeof dateInput === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dateInput)
+        ? moment(dateInput, 'YYYY-MM-DD')
+        : moment(dateInput);
+
     const start = m.clone().startOf('day').toDate();
     const end = m.clone().endOf('day').toDate();
 
