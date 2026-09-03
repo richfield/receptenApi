@@ -53,17 +53,25 @@ export async function saveRecipe(recipe: RecipeData): Promise<RecipeData> {
 // Set image by recipeId and URL
 export async function setImageByUrl(recipeId: string, url: string) {
     try {
+        const imageUrl = url.trim();
+        if (!imageUrl) {
+            throw new Error('Image URL is empty');
+        }
+        new URL(imageUrl);
 
         const existingImage = await RecipeImageModel.findOne({ recipeId });
-        const response = await axios.get(url, {
+        const response = await axios.get<ArrayBuffer>(imageUrl, {
             responseType: 'arraybuffer',
+            timeout: 15000,
             headers: {
                 'User-Agent': 'Mozilla/5.0',
-                'Accept': 'image/webp,image/apng,image/*,*/*;q=0.8',
-                'Referer': url
+                'Accept': 'image/avif,image/webp,image/apng,image/*,*/*;q=0.8'
             }
         });
         const imageBuffer = Buffer.from(response.data);
+        if (imageBuffer.length === 0) {
+            throw new Error('Image response was empty');
+        }
 
         if (existingImage) {
             await RecipeImageModel.updateOne(
@@ -82,11 +90,11 @@ export async function setImageByUrl(recipeId: string, url: string) {
         if (error instanceof Error) {
             // eslint-disable-next-line no-console
             console.error(`Error setting image by URL: ${error.message}`);
-            return null;
+            throw new Error(`Unable to download image: ${error.message}`);
         }
         // eslint-disable-next-line no-console
         console.error('Error setting image by URL:', error);
-        return null;
+        throw new Error('Unable to download image');
     }
 }
 
