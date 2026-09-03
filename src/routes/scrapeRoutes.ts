@@ -90,7 +90,6 @@ router.get('/', async (req: Request, res: Response) => {
         if (isMarleySpoon) {
             const marleySpoonRecipe = await page.evaluate((sourceUrl) => {
                 const text = (element: Element | null) => element?.textContent?.replace(/\s+/g, ' ').trim() || '';
-                const headings = Array.from(document.querySelectorAll('h1, h2, h3, h4, h5, h6'));
                 const pageText = document.body.innerText.replace(/\r/g, '');
                 const title = text(document.querySelector('h1')) || document.title.split('|')[0].trim();
                 const image = (Array.from(document.querySelectorAll('img')) as HTMLImageElement[])
@@ -98,16 +97,19 @@ router.get('/', async (req: Request, res: Response) => {
 
                 const descriptionMatch = pageText.match(/Tafelverhaal\s+([\s\S]*?)(?=Gecreëerd door:|Start nu)/i);
                 const description = descriptionMatch?.[1]?.replace(/\s+/g, ' ').trim() || '';
-                const ingredients = Array.from(document.querySelectorAll('img[alt]'))
+                const ingredients = Array.from(document.querySelectorAll('.dish-detail__we-send img[alt]'))
                     .map((element) => (element as HTMLImageElement).alt.trim())
-                    .filter((value) => value && !/^(image|logo|amex|mastercard|visa|discover|paypal|ideal|googlepay)$/i.test(value));
-                const instructionSection = pageText.match(/Kook dit gerecht in \d+ simpele stappen([\s\S]*?)(?=Social media|Je kunt betalen met)/i)?.[1] || '';
-                const instructionMatches = Array.from(instructionSection.matchAll(/(?:^|\n)\s*(\d+)\.\s*([^\n]+)\n([\s\S]*?)(?=\n\s*\d+\.\s|$)/g));
-                const instructions = instructionMatches.map((match) => {
-                    const name = match[2].trim();
-                    const stepText = match[3].replace(/\s+/g, ' ').trim();
-                    return { '@type': 'HowToStep' as const, name, text: stepText };
-                }).filter((step) => step.text);
+                    .filter(Boolean);
+                const stepParagraphs = Array.from(document.querySelectorAll('.cooking-steps .dish-step__body p'))
+                    .map((element) => text(element));
+                const instructions = stepParagraphs.reduce<{ '@type': 'HowToStep'; name: string; text: string }[]>((steps, value, index) => {
+                    const titleMatch = value.match(/^\d+\.\s*(.+)$/);
+                    const stepText = stepParagraphs[index + 1];
+                    if (titleMatch && stepText && !/^\d+\.\s*/.test(stepText)) {
+                        steps.push({ '@type': 'HowToStep', name: titleMatch[1].trim(), text: stepText });
+                    }
+                    return steps;
+                }, []);
 
                 return {
                     '@context': 'https://schema.org' as const,
