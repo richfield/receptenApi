@@ -93,7 +93,8 @@ router.get('/', async (req: Request, res: Response) => {
                 const pageText = document.body.innerText.replace(/\r/g, '');
                 const title = text(document.querySelector('h1')) || document.title.split('|')[0].trim();
                 const image = (Array.from(document.querySelectorAll('img')) as HTMLImageElement[])
-                    .find((element) => element.src.includes('/media/recipes/') && element.src.includes('/main_photos/'))?.src || '';
+                    .map((element) => element.src || element.dataset.src || element.srcset?.split(',')[0]?.trim().split(' ')[0] || '')
+                    .find((source) => source.includes('/media/recipes/') && source.includes('/main_photos/')) || '';
 
                 const descriptionMatch = pageText.match(/Tafelverhaal\s+([\s\S]*?)(?=Gecreëerd door:|Start nu)/i);
                 const description = descriptionMatch?.[1]?.replace(/\s+/g, ' ').trim() || '';
