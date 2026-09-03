@@ -30,6 +30,7 @@ router.get('/', async (req: Request, res: Response) => {
             res.status(400).json({ error: 'URL is required' });
             return;
         }
+        const isMarleySpoon = new URL(myUrl).hostname.endsWith('marleyspoon.nl');
         // Set a timeout of 30 seconds
         const timeoutPromise = new Promise((_, reject) =>
             setTimeout(() => reject(new Error('Request timed out')), 30000)
@@ -48,7 +49,7 @@ router.get('/', async (req: Request, res: Response) => {
             // return;
             recipe = {} as IRecipe;
         }
-        if (recipe && recipe.instructions) {
+        if (!isMarleySpoon && recipe && recipe.instructions) {
             const savedRecipe = await saveRecipe(convertIRecipeToRecipeData(recipe));
             if (savedRecipe.images && savedRecipe.images?.length > 0 && savedRecipe._id) {
                 setImageByUrl(savedRecipe._id, savedRecipe.images[0])
@@ -82,6 +83,57 @@ router.get('/', async (req: Request, res: Response) => {
 
         // Navigate to the specified URL
         await page.goto(myUrl, {});
+
+        if (isMarleySpoon) {
+            const marleySpoonRecipe = await page.evaluate((sourceUrl) => {
+                const text = (element: Element | null) => element?.textContent?.replace(/\s+/g, ' ').trim() || '';
+                const headings = Array.from(document.querySelectorAll('h1, h2, h3, h4, h5, h6'));
+                const title = text(document.querySelector('h1'));
+                const image = (Array.from(document.querySelectorAll('img')) as HTMLImageElement[])
+                    .find((element) => element.src.includes('/media/recipes/') && element.src.includes('/main_photos/'))?.src || '';
+
+                const tafelverhaal = headings.find((heading) => text(heading).toLowerCase() === 'tafelverhaal');
+                const description = tafelverhaal?.nextElementSibling ? text(tafelverhaal.nextElementSibling) : '';
+                const ingredientsHeading = headings.find((heading) => text(heading).toLowerCase() === 'wat we sturen');
+                const ingredientsContainer = ingredientsHeading?.parentElement;
+                const ingredients = ingredientsContainer
+                    ? Array.from(ingredientsContainer.querySelectorAll('img[alt]'))
+                        .map((element) => (element as HTMLImageElement).alt.trim())
+                        .filter(Boolean)
+                    : [];
+                const instructions = headings
+                    .map((heading) => {
+                        const headingText = text(heading);
+                        if (!/^\d+\.\s+/.test(headingText)) return null;
+                        const stepText = text(heading.nextElementSibling);
+                        return stepText ? { '@type': 'HowToStep' as const, name: headingText, text: `${headingText} ${stepText}` } : null;
+                    })
+                    .filter((step): step is { '@type': 'HowToStep'; name: string; text: string } => step !== null);
+
+                return {
+                    '@context': 'https://schema.org' as const,
+                    '@type': 'Recipe' as const,
+                    name: title || sourceUrl,
+                    url: sourceUrl,
+                    description,
+                    images: image ? [image] : [],
+                    recipeIngredient: ingredients,
+                    recipeInstructions: instructions,
+                    totalTime: text(Array.from(document.querySelectorAll('body *')).find((element) => text(element).toUpperCase() === 'BEREIDINGSTIJD')?.nextElementSibling || null),
+                };
+            }, myUrl);
+
+            if (marleySpoonRecipe.name && marleySpoonRecipe.recipeInstructions.length > 0) {
+                const savedRecipe = await saveRecipe(marleySpoonRecipe);
+                if (marleySpoonRecipe.images[0] && savedRecipe._id) {
+                    await setImageByUrl(savedRecipe._id, marleySpoonRecipe.images[0]);
+                }
+                await browser.close();
+                res.json(savedRecipe);
+                return;
+            }
+        }
+
         // Extract recipe data from <script type="application/ld+json">
         let recipeData: RecipeData = {};
         const scriptElements = await page.evaluate(() => {

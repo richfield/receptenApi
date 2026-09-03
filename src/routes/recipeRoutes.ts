@@ -23,9 +23,9 @@ router.get('/', async (req: Request, res: Response) => {
         res.json(recipes);
     } catch (error) {
         // eslint-disable-next-line no-console
-        console.error({error, req, res})
+        console.error({ error, req, res })
         if (error instanceof Error) {
-        res.status(500).json({ error: error.message });
+            res.status(500).json({ error: error.message });
         }
     }
 });
@@ -52,8 +52,8 @@ router.get('/get/:id', async (req: Request<{ id: string }>, res: Response) => {
         res.json(recipe);
     } catch (error) {
         // eslint-disable-next-line no-console
-        console.error({error, req, res})
-        if(error instanceof Error) {
+        console.error({ error, req, res })
+        if (error instanceof Error) {
             res.status(404).json({ error: error.message });
         }
     }
@@ -81,7 +81,7 @@ router.post('/save', async (req: Request, res: Response) => {
         res.json({ message: 'Recipe saved successfully', _id: saved._id });
     } catch (error) {
         // eslint-disable-next-line no-console
-        console.error({error, req, res})
+        console.error({ error, req, res })
         if (error instanceof Error) {
             res.status(400).json({ error: error.message });
         }
@@ -110,9 +110,9 @@ router.delete('/:id', async (req: Request<{ id: string }>, res: Response) => {
         res.json({ message: 'Recipe deleted successfully' });
     } catch (error) {
         // eslint-disable-next-line no-console
-        console.error({error, req, res})
+        console.error({ error, req, res })
         if (error instanceof Error) {
-        res.status(404).json({ error: error.message });
+            res.status(404).json({ error: error.message });
         }
     }
 });
@@ -140,9 +140,9 @@ router.get('/search', async (req: Request, res: Response) => {
         res.json(recipes);
     } catch (error) {
         // eslint-disable-next-line no-console
-        console.error({error, req, res})
+        console.error({ error, req, res })
         if (error instanceof Error) {
-        res.status(404).json({ error: error.message });
+            res.status(404).json({ error: error.message });
         }
     }
 });
@@ -186,7 +186,7 @@ router.post('/:recipeId/image/url', async (req: Request<{ recipeId: string }>, r
         res.status(200).json(updatedRecipe);
     } catch (error) {
         // eslint-disable-next-line no-console
-        console.error({error, req, res})
+        console.error({ error, req, res })
         if (error instanceof Error) {
             res.status(500).json({ error: error.message });
         } else {
@@ -234,10 +234,10 @@ router.post('/:recipeId/image/upload', upload.single('image'), async (req: Reque
         res.status(200).json(updatedRecipe);
     } catch (error) {
         // eslint-disable-next-line no-console
-        console.error({error, req, res})
+        console.error({ error, req, res })
         if (error instanceof Error) {
             res.status(500).json({ error: error.message });
-        } else  {
+        } else {
             res.status(500).json(error);
         }
     }
@@ -280,7 +280,7 @@ router.get('/:recipeId/image', async (req: Request<{ recipeId: string }>, res: R
             });
         } else {
             // eslint-disable-next-line no-console
-            console.error({error, req, res})
+            console.error({ error, req, res })
             res.status(500).json({ error: 'Internal Server Error' });
         }
     }
