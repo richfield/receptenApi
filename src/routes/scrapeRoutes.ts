@@ -82,33 +82,32 @@ router.get('/', async (req: Request, res: Response) => {
         });
 
         // Navigate to the specified URL
-        await page.goto(myUrl, {});
+        await page.goto(myUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
+        if (isMarleySpoon) {
+            await page.waitForSelector('h1', { timeout: 10000 }).catch(() => undefined);
+        }
 
         if (isMarleySpoon) {
             const marleySpoonRecipe = await page.evaluate((sourceUrl) => {
                 const text = (element: Element | null) => element?.textContent?.replace(/\s+/g, ' ').trim() || '';
                 const headings = Array.from(document.querySelectorAll('h1, h2, h3, h4, h5, h6'));
-                const title = text(document.querySelector('h1'));
+                const pageText = document.body.innerText.replace(/\r/g, '');
+                const title = text(document.querySelector('h1')) || document.title.split('|')[0].trim();
                 const image = (Array.from(document.querySelectorAll('img')) as HTMLImageElement[])
                     .find((element) => element.src.includes('/media/recipes/') && element.src.includes('/main_photos/'))?.src || '';
 
-                const tafelverhaal = headings.find((heading) => text(heading).toLowerCase() === 'tafelverhaal');
-                const description = tafelverhaal?.nextElementSibling ? text(tafelverhaal.nextElementSibling) : '';
-                const ingredientsHeading = headings.find((heading) => text(heading).toLowerCase() === 'wat we sturen');
-                const ingredientsContainer = ingredientsHeading?.parentElement;
-                const ingredients = ingredientsContainer
-                    ? Array.from(ingredientsContainer.querySelectorAll('img[alt]'))
-                        .map((element) => (element as HTMLImageElement).alt.trim())
-                        .filter(Boolean)
-                    : [];
-                const instructions = headings
-                    .map((heading) => {
-                        const headingText = text(heading);
-                        if (!/^\d+\.\s+/.test(headingText)) return null;
-                        const stepText = text(heading.nextElementSibling);
-                        return stepText ? { '@type': 'HowToStep' as const, name: headingText, text: `${headingText} ${stepText}` } : null;
-                    })
-                    .filter((step): step is { '@type': 'HowToStep'; name: string; text: string } => step !== null);
+                const descriptionMatch = pageText.match(/Tafelverhaal\s+([\s\S]*?)(?=Gecreëerd door:|Start nu)/i);
+                const description = descriptionMatch?.[1]?.replace(/\s+/g, ' ').trim() || '';
+                const ingredients = Array.from(document.querySelectorAll('img[alt]'))
+                    .map((element) => (element as HTMLImageElement).alt.trim())
+                    .filter((value) => value && !/^(image|logo|amex|mastercard|visa|discover|paypal|ideal|googlepay)$/i.test(value));
+                const instructionSection = pageText.match(/Kook dit gerecht in \d+ simpele stappen([\s\S]*?)(?=Social media|Je kunt betalen met)/i)?.[1] || '';
+                const instructionMatches = Array.from(instructionSection.matchAll(/(?:^|\n)\s*(\d+)\.\s*([^\n]+)\n([\s\S]*?)(?=\n\s*\d+\.\s|$)/g));
+                const instructions = instructionMatches.map((match) => {
+                    const name = match[2].trim();
+                    const stepText = match[3].replace(/\s+/g, ' ').trim();
+                    return { '@type': 'HowToStep' as const, name, text: stepText };
+                }).filter((step) => step.text);
 
                 return {
                     '@context': 'https://schema.org' as const,
@@ -119,7 +118,7 @@ router.get('/', async (req: Request, res: Response) => {
                     images: image ? [image] : [],
                     recipeIngredient: ingredients,
                     recipeInstructions: instructions,
-                    totalTime: text(Array.from(document.querySelectorAll('body *')).find((element) => text(element).toUpperCase() === 'BEREIDINGSTIJD')?.nextElementSibling || null),
+                    totalTime: pageText.match(/BEREIDINGSTIJD\s*\n?([^\n]+)/i)?.[1]?.trim() || '',
                 };
             }, myUrl);
 
