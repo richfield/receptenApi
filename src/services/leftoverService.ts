@@ -46,10 +46,14 @@ export const listLeftovers = async (opts?: { recipeId?: string; status?: 'inFree
 };
 
 export const claimLeftover = async (leftoverId: string, userId: string, day: any) => {
+  const claimedAt = typeof day === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(day)
+    ? moment.utc(day, 'YYYY-MM-DD').startOf('day').toDate()
+    : day ? new Date(day) : new Date();
+
   // Atomically claim a leftover that is still in the freezer
   const updated = await LeftoverModel.findOneAndUpdate(
     { _id: leftoverId, inFreezer: true },
-    { $set: { inFreezer: false, claimedBy: userId, claimedAt: day } },
+    { $set: { inFreezer: false, claimedBy: userId, claimedAt } },
     { new: true }
   ).populate('recipe').exec();
 
