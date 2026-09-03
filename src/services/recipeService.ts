@@ -136,10 +136,20 @@ export async function getRecipeById(findId: string) {
 }
 
 // Get all recipes
-export async function getAllRecipes() {
+export async function getAllRecipes(page = 1, pageSize = 20) {
     try {
-        const recipes = await RecipeModel.find();
-        return recipes.map((recipe: { toObject: () => RecipeData; }) => recipe.toObject());
+        const skip = (page - 1) * pageSize;
+        const [recipes, totalItems] = await Promise.all([
+            RecipeModel.find().sort({ name: 1 }).skip(skip).limit(pageSize),
+            RecipeModel.countDocuments(),
+        ]);
+        return {
+            items: recipes.map((recipe: { toObject: () => RecipeData; }) => recipe.toObject()),
+            page,
+            pageSize,
+            totalItems,
+            totalPages: Math.ceil(totalItems / pageSize),
+        };
 
     } catch (error) {
         // eslint-disable-next-line no-console
@@ -151,7 +161,7 @@ export async function getAllRecipes() {
 }
 
 // Search recipes based on a query
-export async function searchRecipes(query: string) {
+export async function searchRecipes(query: string, page = 1, pageSize = 20) {
     try {
         const searchQuery = {
             $or: [
@@ -181,8 +191,18 @@ export async function searchRecipes(query: string) {
                 }
             ]
         };
-        const recipes = await RecipeModel.find(searchQuery);
-        return recipes.map((recipe: { toObject: () => RecipeData; }) => recipe.toObject());
+        const skip = (page - 1) * pageSize;
+        const [recipes, totalItems] = await Promise.all([
+            RecipeModel.find(searchQuery).sort({ name: 1 }).skip(skip).limit(pageSize),
+            RecipeModel.countDocuments(searchQuery),
+        ]);
+        return {
+            items: recipes.map((recipe: { toObject: () => RecipeData; }) => recipe.toObject()),
+            page,
+            pageSize,
+            totalItems,
+            totalPages: Math.ceil(totalItems / pageSize),
+        };
 
     } catch (error) {
         // eslint-disable-next-line no-console

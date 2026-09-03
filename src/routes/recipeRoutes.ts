@@ -17,7 +17,9 @@ const upload = multer();
  */
 router.get('/', async (req: Request, res: Response) => {
     try {
-        const recipes = await recipeService.getAllRecipes();
+        const page = Math.max(Number(req.query.page) || 1, 1);
+        const pageSize = Math.min(Math.max(Number(req.query.pageSize) || 20, 1), 100);
+        const recipes = await recipeService.getAllRecipes(page, pageSize);
         res.json(recipes);
     } catch (error) {
         // eslint-disable-next-line no-console
@@ -132,7 +134,9 @@ router.delete('/:id', async (req: Request<{ id: string }>, res: Response) => {
 router.get('/search', async (req: Request, res: Response) => {
     const { query } = req.query as { query?: string; };
     try {
-        const recipes = await recipeService.searchRecipes(query || '');
+        const page = Math.max(Number(req.query.page) || 1, 1);
+        const pageSize = Math.min(Math.max(Number(req.query.pageSize) || 20, 1), 100);
+        const recipes = await recipeService.searchRecipes(query || '', page, pageSize);
         res.json(recipes);
     } catch (error) {
         // eslint-disable-next-line no-console
