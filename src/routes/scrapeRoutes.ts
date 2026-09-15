@@ -1,6 +1,6 @@
 import express, { Request, Response } from 'express';
 import { parseURL } from 'html-recipe-parser';
-import puppeteer from 'puppeteer';
+import puppeteer, { type Page } from 'puppeteer';
 import { convertIRecipeToRecipeData } from '../functions';
 import { saveRecipe, setImageByUrl } from '../services/recipeService';
 import { RecipeData } from '../Types';
@@ -68,6 +68,44 @@ const flattenInstructions = (value: unknown): RecipeInstruction[] => {
 const recipeScore = (recipe: RecipeData): number =>
     (Array.isArray(recipe.recipeInstructions) ? recipe.recipeInstructions.length : 0) * 2
     + (Array.isArray(recipe.recipeIngredient) ? recipe.recipeIngredient.length : 0);
+
+const extractVisibleInstructions = async (page: Page): Promise<RecipeInstruction[]> => page.evaluate(() => {
+    const elements = Array.from(document.querySelectorAll('h2, h3, p'));
+    const steps: { '@type': 'HowToStep'; name: string; text: string }[] = [];
+    let collecting = false;
+    let currentName = '';
+    let currentText: string[] = [];
+
+    const finishStep = () => {
+        const text = currentText.join(' ').replace(/\s+/g, ' ').trim();
+        if (currentName && text) {
+            steps.push({ '@type': 'HowToStep', name: currentName, text });
+        }
+        currentName = '';
+        currentText = [];
+    };
+
+    for (const element of elements) {
+        const text = element.textContent?.replace(/\s+/g, ' ').trim() || '';
+        if (!text) continue;
+
+        if (element.matches('h2, h3')) {
+            if (/delen met vrienden|additional links/i.test(text)) break;
+            if (!collecting && /stap voor stap recept/i.test(text)) {
+                collecting = true;
+                continue;
+            }
+            if (collecting) {
+                finishStep();
+                currentName = text;
+            }
+        } else if (collecting && currentName) {
+            currentText.push(text);
+        }
+    }
+    finishStep();
+    return steps;
+});
 
 /**
  * @openapi
@@ -231,6 +269,12 @@ router.get('/', async (req: Request, res: Response) => {
         recipeData = recipeCandidates
             .sort((left, right) => recipeScore(right) - recipeScore(left))[0] ?? {};
         recipeData.recipeInstructions = flattenInstructions(recipeData.recipeInstructions);
+        if (recipeData.recipeInstructions.length < 2) {
+            const visibleInstructions = await extractVisibleInstructions(page);
+            if (visibleInstructions.length > recipeData.recipeInstructions.length) {
+                recipeData.recipeInstructions = visibleInstructions;
+            }
+        }
         if (recipeData?.name) {
             if (Array.isArray(recipeData.image)) {
                 recipeData.images = recipeData.image
