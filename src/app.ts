@@ -6,7 +6,8 @@ dotenv.config();
 import mongoose, { ConnectOptions } from 'mongoose';
 import recipeRoutes from './routes/recipeRoutes';
 import scrapeRoutes from './routes/scrapeRoutes';
-import admin from 'firebase-admin';
+import { cert, initializeApp, type ServiceAccount } from 'firebase-admin/app';
+import { getAuth } from 'firebase-admin/auth';
 import { Response, NextFunction } from 'express';
 import { AuthenticatedRequest } from './Types';
 import profileRoutes from './routes/profileRoutes';
@@ -39,8 +40,8 @@ const serviceAccount = {
     auth_provider_x509_cert_url: requiredEnv('FIREBASE_AUTH_PROVIDER_X509_CERT_URL'),
     client_x509_cert_url: requiredEnv('FIREBASE_CLIENT_X509_CERT_URL')
 };
-admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
+initializeApp({
+    credential: cert(serviceAccount as ServiceAccount),
 });
 
 export const authenticate = async (
@@ -59,7 +60,7 @@ export const authenticate = async (
         return res.status(401).json({ error: 'Unauthorized' });
     }
     try {
-        const decodedToken = await admin.auth().verifyIdToken(token);
+        const decodedToken = await getAuth().verifyIdToken(token);
         req.user = decodedToken; // Attach decoded token to `req.user`
         return next(); // Proceed to the next middleware or route handler
     } catch {

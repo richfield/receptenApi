@@ -1,7 +1,7 @@
 import express, { Request, Response } from 'express';
 import * as userProfileService from '../services/userProfileService';
 import { AuthenticatedRequest } from '../Types';
-import admin from 'firebase-admin';
+import { getAuth } from 'firebase-admin/auth';
 
 const router = express.Router();
 
@@ -124,7 +124,7 @@ router.get('/batch', async (req: Request, res: Response) => {
         if (uids.length === 0) return res.json([]);
 
         // Use firebase-admin to batch fetch user records
-        const users = await admin.auth().getUsers(uids.map(u => ({ uid: u })));
+        const users = await getAuth().getUsers(uids.map(uid => ({ uid })));
         const mapped = users.users.map(u => ({ uid: u.uid, displayName: u.displayName || u.email || u.uid, email: u.email, photoURL: u.photoURL }));
         res.json(mapped);
     } catch (error) {
