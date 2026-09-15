@@ -8,6 +8,8 @@ import { IRecipe } from 'html-recipe-parser/dist/interfaces';
 
 const router = express.Router();
 
+const normalizeJsonLd = (content: string): string => content.replace(/[\u0000-\u001F]/g, ' ');
+
 /**
  * @openapi
  * /scrape:
@@ -148,7 +150,7 @@ router.get('/', async (req: Request, res: Response) => {
         for (const scriptContent of scriptElements) {
             if (scriptContent) {
                 try {
-                    const jsonData = JSON.parse(scriptContent.trim());
+                    const jsonData = JSON.parse(normalizeJsonLd(scriptContent).trim());
                     if (jsonData['@type'] === 'Recipe') {
                         recipeData = jsonData as RecipeData;
                         break; // Break the loop if we found the recipe
