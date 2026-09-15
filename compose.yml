@@ -1,0 +1,12 @@
+services:
+  recepten-api:
+    build: .
+    shm_size: "1gb"
+    container_name: receptenApi
+    ports:
+      - "3005:3005"
+    env_file:
+      - .env
+    environment:
+      PORT: "3005"
+    command: ["node", "app.js"]

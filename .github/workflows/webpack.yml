@@ -34,6 +34,7 @@ jobs:
         cp ${{ github.workspace }}/package.json /docker-config/receptenApi/
         cp ${{ github.workspace }}/package-lock.json /docker-config/receptenApi/
         cp ${{ github.workspace }}/Dockerfile /docker-config/receptenApi/
+        cp ${{ github.workspace }}/compose.yml /docker-config/receptenApi/
 
 
     - name: Restart Service

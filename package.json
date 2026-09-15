@@ -33,6 +33,7 @@
     "puppeteer": "25.11.0",
     "sqlite": "^5.1.1",
     "sqlite3": "6.0.1",
+    "swagger-ui-express": "5.0.1",
     "uuid": "^11.0.3"
   },
   "overrides": {
@@ -51,7 +52,6 @@
     "globals": "^15.14.0",
     "prettier": "^3.4.2",
     "swagger-jsdoc": "^6.3.0",
-    "swagger-ui-express": "^5.0.1",
     "ts-node": "^10.9.2",
     "tsoa": "^7.0.0-alpha.0",
     "typescript": "^5.7.2",

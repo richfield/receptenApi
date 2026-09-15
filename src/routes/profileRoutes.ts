@@ -26,7 +26,7 @@ router.get('/me', async (req: Request, res: Response) => {
         res.json(profile);
     } catch (error) {
         // eslint-disable-next-line no-console
-        console.error({error, req, res})
+        console.error({ error, req, res })
         if (error instanceof Error) {
             res.status(500).json({ error: error.message });
         }
@@ -62,7 +62,7 @@ router.post('/me', async (req: Request, res: Response) => {
 
     } catch (error) {
         // eslint-disable-next-line no-console
-        console.error({error, req, res})
+        console.error({ error, req, res })
         if (error instanceof Error) {
             res.status(500).json({ error: error.message });
         }
@@ -85,7 +85,7 @@ router.get('/roles', async (req: AuthenticatedRequest, res: Response) => {
         res.json(roles);
     } catch (error) {
         // eslint-disable-next-line no-console
-        console.error({error, req, res})
+        console.error({ error, req, res })
         if (error instanceof Error) {
             res.status(500).json({ error: error.message });
         }
@@ -108,7 +108,7 @@ router.get('/groups', async (req: AuthenticatedRequest, res: Response) => {
         res.json(groups);
     } catch (error) {
         // eslint-disable-next-line no-console
-        console.error({error, req, res})
+        console.error({ error, req, res })
         if (error instanceof Error) {
             res.status(500).json({ error: error.message });
         }
