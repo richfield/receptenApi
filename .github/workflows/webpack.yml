@@ -3,8 +3,6 @@ name: Deploy ReceptenApi
 on:
   push:
     branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
 
 jobs:
   build:
@@ -23,7 +21,7 @@ jobs:
         node-version: ${{ matrix.node-version }}
 
     - name: Install dependencies
-      run: npm install
+      run: npm ci
 
     - name: Build the project
       run: npm run build

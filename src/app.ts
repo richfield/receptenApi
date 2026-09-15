@@ -19,17 +19,25 @@ import swaggerUi from 'swagger-ui-express';
 
 const app = express();
 
+const requiredEnv = (name: string): string => {
+    const value = process.env[name];
+    if (!value) {
+        throw new Error(`Missing required environment variable: ${name}`);
+    }
+    return value;
+};
+
 const serviceAccount = {
     type: 'service_account',
-    project_id: process.env.FIREBASE_PROJECT_ID,
-    private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID,
-    private_key: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-    client_email: process.env.FIREBASE_CLIENT_EMAIL,
-    client_id: process.env.FIREBASE_CLIENT_ID,
-    auth_uri: process.env.FIREBASE_AUTH_URI,
-    token_uri: process.env.FIREBASE_TOKEN_URI,
-    auth_provider_x509_cert_url: process.env.FIREBASE_AUTH_PROVIDER_X509_CERT_URL,
-    client_x509_cert_url: process.env.FIREBASE_CLIENT_X509_CERT_URL
+    project_id: requiredEnv('FIREBASE_PROJECT_ID'),
+    private_key_id: requiredEnv('FIREBASE_PRIVATE_KEY_ID'),
+    private_key: requiredEnv('FIREBASE_PRIVATE_KEY').replace(/\\n/g, '\n'),
+    client_email: requiredEnv('FIREBASE_CLIENT_EMAIL'),
+    client_id: requiredEnv('FIREBASE_CLIENT_ID'),
+    auth_uri: requiredEnv('FIREBASE_AUTH_URI'),
+    token_uri: requiredEnv('FIREBASE_TOKEN_URI'),
+    auth_provider_x509_cert_url: requiredEnv('FIREBASE_AUTH_PROVIDER_X509_CERT_URL'),
+    client_x509_cert_url: requiredEnv('FIREBASE_CLIENT_X509_CERT_URL')
 };
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
@@ -63,7 +71,7 @@ app.use((req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     authenticate(req, res, next).catch(next);
 });
 const port = process.env.PORT ? parseInt(process.env.PORT) : 3000;
-const mongoURI = process.env.MONGODB_URI || 'mongodb://debian.ten-velde.com:32768';
+const mongoURI = requiredEnv('MONGODB_URI');
 const options: ConnectOptions = {
     dbName: 'receptenApi'
 }
