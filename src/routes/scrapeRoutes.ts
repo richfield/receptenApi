@@ -10,6 +10,65 @@ const router = express.Router();
 
 const normalizeJsonLd = (content: string): string => content.replace(/[\u0000-\u001F]/g, ' ');
 
+const decodeHtmlEntities = (value: string): string => value
+    .replace(/&#(\d+);/g, (_match, code: string) => String.fromCodePoint(Number(code)))
+    .replace(/&#x([\da-f]+);/gi, (_match, code: string) => String.fromCodePoint(parseInt(code, 16)))
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>');
+
+const decodeRecipeText = (recipe: RecipeData): RecipeData => ({
+    ...recipe,
+    name: typeof recipe.name === 'string' ? decodeHtmlEntities(recipe.name) : recipe.name,
+    description: typeof recipe.description === 'string' ? decodeHtmlEntities(recipe.description) : recipe.description,
+    recipeIngredient: recipe.recipeIngredient?.map(item => decodeHtmlEntities(item)),
+    recipeInstructions: recipe.recipeInstructions?.map(instruction => ({
+        ...instruction,
+        name: decodeHtmlEntities(instruction.name),
+        text: decodeHtmlEntities(instruction.text),
+    })),
+});
+
+type RecipeInstruction = NonNullable<RecipeData['recipeInstructions']>[number];
+
+const flattenInstructions = (value: unknown): RecipeInstruction[] => {
+    if (typeof value === 'string') {
+        const text = value.trim();
+        return text ? [{ '@type': 'HowToStep', name: text, text }] : [];
+    }
+    if (!Array.isArray(value)) {
+        return [];
+    }
+
+    return value.flatMap((item): RecipeInstruction[] => {
+        if (typeof item === 'string') {
+            return flattenInstructions(item);
+        }
+        if (!item || typeof item !== 'object') {
+            return [];
+        }
+
+        const instruction = item as Partial<RecipeInstruction> & { itemListElement?: unknown };
+        if (instruction['@type'] === 'HowToSection') {
+            return flattenInstructions(instruction.itemListElement);
+        }
+        if (instruction['@type'] === 'HowToStep' && typeof instruction.text === 'string') {
+            return [{
+                '@type': 'HowToStep',
+                name: typeof instruction.name === 'string' ? instruction.name : instruction.text,
+                text: instruction.text,
+            }];
+        }
+        return [];
+    });
+};
+
+const recipeScore = (recipe: RecipeData): number =>
+    (Array.isArray(recipe.recipeInstructions) ? recipe.recipeInstructions.length : 0) * 2
+    + (Array.isArray(recipe.recipeIngredient) ? recipe.recipeIngredient.length : 0);
+
 /**
  * @openapi
  * /scrape:
@@ -143,6 +202,7 @@ router.get('/', async (req: Request, res: Response) => {
 
         // Extract recipe data from <script type="application/ld+json">
         let recipeData: RecipeData = {};
+        const recipeCandidates: RecipeData[] = [];
         const scriptElements = await page.evaluate(() => {
             return Array.from(document.querySelectorAll('script[type="application/ld+json"]')).map(script => script.innerHTML);
         });
@@ -152,16 +212,14 @@ router.get('/', async (req: Request, res: Response) => {
                 try {
                     const jsonData = JSON.parse(normalizeJsonLd(scriptContent).trim());
                     if (jsonData['@type'] === 'Recipe') {
-                        recipeData = jsonData as RecipeData;
-                        break; // Break the loop if we found the recipe
+                        recipeCandidates.push(jsonData as RecipeData);
                     }
 
                     // If there's an @graph array, search within it
                     if (jsonData['@graph']) {
                         const graphRecipe = jsonData['@graph'].find((item: { [x: string]: string; }) => item['@type'] === 'Recipe');
                         if (graphRecipe) {
-                            recipeData = graphRecipe as RecipeData;
-                            break; // Break the loop once we find the recipe
+                            recipeCandidates.push(graphRecipe as RecipeData);
                         }
                     }
                 } catch (err) {
@@ -170,6 +228,9 @@ router.get('/', async (req: Request, res: Response) => {
                 }
             }
         }
+        recipeData = recipeCandidates
+            .sort((left, right) => recipeScore(right) - recipeScore(left))[0] ?? {};
+        recipeData.recipeInstructions = flattenInstructions(recipeData.recipeInstructions);
         if (recipeData?.name) {
             if (Array.isArray(recipeData.image)) {
                 recipeData.images = recipeData.image
@@ -195,7 +256,7 @@ router.get('/', async (req: Request, res: Response) => {
             }, myUrl));
         }
         // Save recipe to SQLite database
-        const newRecipe = await saveRecipe(recipeData);
+        const newRecipe = await saveRecipe(decodeRecipeText(recipeData));
         if (newRecipe.images && newRecipe.images?.length > 0 && newRecipe._id) {
             const image = newRecipe.images.find(i => i);
             if (image) {
